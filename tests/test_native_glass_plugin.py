@@ -1,4 +1,5 @@
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -46,9 +47,33 @@ class NativeGlassPluginTests(unittest.TestCase):
 
         self.assertGreaterEqual(manifest["version"], "0.2.0")
         self.assertEqual(manifest["applications"]["zotero"]["id"], "zotero-glass@avi7ii.github.io")
-        self.assertNotIn("update_url", manifest["applications"]["zotero"])
+        self.assertEqual(
+            manifest["applications"]["zotero"]["update_url"],
+            "https://raw.githubusercontent.com/Avi7ii/Zotero-glass/main/updates.json",
+        )
         self.assertEqual(manifest["applications"]["zotero"]["strict_min_version"], "9.0")
         self.assertEqual(manifest["applications"]["zotero"]["strict_max_version"], "9.*")
+
+    def test_update_manifest_matches_release_metadata(self):
+        manifest = json.loads((PLUGIN / "manifest.json").read_text())
+        updates = json.loads((ROOT / "updates.json").read_text())
+        plugin_id = manifest["applications"]["zotero"]["id"]
+        entry = updates["addons"][plugin_id]["updates"][0]
+
+        self.assertEqual(entry["version"], manifest["version"])
+        self.assertEqual(
+            entry["update_link"],
+            f"https://github.com/Avi7ii/Zotero-glass/releases/download/"
+            f"v{manifest['version']}/Zotero-Glass-{manifest['version']}.xpi",
+        )
+        self.assertRegex(entry["update_hash"], re.compile(r"^sha256:[0-9a-f]{64}$"))
+        self.assertEqual(
+            entry["applications"]["zotero"],
+            {
+                "strict_min_version": manifest["applications"]["zotero"]["strict_min_version"],
+                "strict_max_version": manifest["applications"]["zotero"]["strict_max_version"],
+            },
+        )
 
     def test_plugin_has_main_window_entry_and_visible_status(self):
         source = (PLUGIN / "chrome/content/zoteroGlass.js").read_text()

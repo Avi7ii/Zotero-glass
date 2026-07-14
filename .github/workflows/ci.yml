@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test and build XPI
+        run: ./build.sh
+      - name: Upload XPI
+        uses: actions/upload-artifact@v4
+        with:
+          name: zotero-glass-xpi
+          path: dist/*.xpi

@@ -1,0 +1,527 @@
+<?xml version="1.0"?>
+<window
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  id="zotero-glass-preferences-window"
+  title="Zotero Glass 设置"
+  width="680"
+  height="580"
+  minwidth="640"
+  minheight="540"
+  style="margin: 0; padding: 0; background: transparent; color: #f4f7f8;">
+  <html:head>
+    <html:style>
+      :root,
+      window {
+        color-scheme: dark;
+        -moz-appearance: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        color: #f4f7f8 !important;
+        font: menu;
+      }
+
+      html|html,
+      html|body {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+        color: #f4f7f8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      .shell {
+        min-height: 100vh;
+        padding: 28px 34px 26px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.012)),
+          rgba(13, 16, 18, 0.42);
+        backdrop-filter: blur(42px) saturate(1.35);
+        -webkit-backdrop-filter: blur(42px) saturate(1.35);
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 22px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 720;
+        letter-spacing: 0;
+      }
+
+      .status {
+        justify-self: end;
+        min-width: 58px;
+        padding: 4px 10px;
+        border: 1px solid rgba(146, 207, 255, 0.32);
+        border-radius: 999px;
+        background: rgba(146, 207, 255, 0.13);
+        color: rgba(232, 244, 255, 0.92);
+        font-size: 12px;
+        font-weight: 650;
+        text-align: center;
+      }
+
+      .status.saved {
+        border-color: rgba(121, 216, 168, 0.45);
+        background: rgba(121, 216, 168, 0.16);
+        color: rgba(220, 255, 235, 0.96);
+      }
+
+      .status.error {
+        border-color: rgba(255, 120, 120, 0.5);
+        background: rgba(190, 62, 62, 0.2);
+        color: rgba(255, 226, 226, 0.98);
+      }
+
+      .material-option,
+      .action {
+        appearance: none;
+        border: 0;
+        color: inherit;
+        font: inherit;
+      }
+
+      .form {
+        display: grid;
+        gap: 18px;
+      }
+
+      .row,
+      .material-row,
+      .toggle-row {
+        display: grid;
+        grid-template-columns: 126px minmax(0, 1fr) 74px;
+        align-items: center;
+        gap: 16px;
+      }
+
+      label,
+      .label {
+        color: rgba(244, 247, 248, 0.9);
+        font-size: 14px;
+        font-weight: 690;
+      }
+
+      .value {
+        color: rgba(244, 247, 248, 0.72);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: #92cfff;
+      }
+
+      input[type="range"]::-moz-range-track {
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.42);
+      }
+
+      input[type="range"]::-moz-range-progress {
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #74b9ff, #bee8ff);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.86);
+        border-radius: 50%;
+        background: #f8fbff;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+      }
+
+      input[type="color"] {
+        width: 72px;
+        height: 34px;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .toggle-row {
+        margin-top: 4px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.085);
+      }
+
+      .switch {
+        justify-self: start;
+        width: 44px;
+        height: 26px;
+        margin: 0;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.12);
+        transition: background-color 0.14s ease, border-color 0.14s ease;
+      }
+
+      .switch::before {
+        display: block;
+        width: 20px;
+        height: 20px;
+        margin: 2px;
+        border-radius: 50%;
+        background: #f8fbff;
+        box-shadow: 0 2px 9px rgba(0, 0, 0, 0.38);
+        content: "";
+        transition: transform 0.14s ease;
+      }
+
+      .switch:checked {
+        border-color: rgba(146, 207, 255, 0.58);
+        background: rgba(84, 154, 218, 0.62);
+      }
+
+      .switch:checked::before {
+        transform: translateX(18px);
+      }
+
+      .sidebar-controls {
+        display: grid;
+        gap: 14px;
+      }
+
+      .sidebar-controls.is-disabled {
+        opacity: 0.42;
+      }
+
+      .sidebar-controls.is-disabled input {
+        pointer-events: none;
+      }
+
+      .material-options {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .material-option {
+        min-height: 36px;
+        padding: 0 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.028)),
+          rgba(255, 255, 255, 0.055);
+        color: rgba(244, 247, 248, 0.84);
+        font-size: 12px;
+        font-weight: 680;
+        text-align: center;
+      }
+
+      .material-option.is-selected {
+        border-color: rgba(146, 207, 255, 0.62);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04)),
+          rgba(82, 149, 207, 0.28);
+        color: #f8fbff;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.085);
+      }
+
+      .action {
+        min-width: 106px;
+        min-height: 34px;
+        padding: 0 14px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
+          rgba(255, 255, 255, 0.06);
+        color: rgba(244, 247, 248, 0.9);
+        font-weight: 650;
+      }
+
+      .action:hover {
+        border-color: rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.1);
+      }
+    </html:style>
+  </html:head>
+  <html:body>
+    <html:main class="shell">
+      <html:div class="topbar">
+        <html:h1>Zotero Glass</html:h1>
+        <html:div class="status" id="apply-status">已就绪</html:div>
+      </html:div>
+
+      <html:section class="form">
+        <html:div class="row">
+          <html:label for="backgroundTransparency">背景透明度</html:label>
+          <html:input id="backgroundTransparency" type="range" min="0.35" max="0.92" step="0.01" />
+          <html:span class="value" id="backgroundTransparency-value"></html:span>
+        </html:div>
+
+        <html:div class="row">
+          <html:label for="blurStrength">模糊强度</html:label>
+          <html:input id="blurStrength" type="range" min="0" max="100" step="1" />
+          <html:span class="value" id="blurStrength-value"></html:span>
+        </html:div>
+
+        <html:div class="row">
+          <html:label for="backgroundColor">背景颜色</html:label>
+          <html:input id="backgroundColor" type="color" />
+          <html:span class="value" id="backgroundColor-value"></html:span>
+        </html:div>
+
+        <html:div class="material-row">
+          <html:span class="label">玻璃材质</html:span>
+          <html:div class="material-options" id="glassMaterial" role="radiogroup">
+            <html:button type="button" class="material-option" data-material="auto">自动</html:button>
+            <html:button type="button" class="material-option" data-material="hud">HUD</html:button>
+            <html:button type="button" class="material-option" data-material="underWindow">窗口背景</html:button>
+            <html:button type="button" class="material-option" data-material="sidebar">侧边栏</html:button>
+            <html:button type="button" class="material-option" data-material="menu">菜单</html:button>
+            <html:button type="button" class="material-option" data-material="window">普通窗口</html:button>
+          </html:div>
+          <html:span class="value" id="glassMaterial-value"></html:span>
+        </html:div>
+
+        <html:div class="toggle-row">
+          <html:label for="sidebarIndependent">侧栏独立调节</html:label>
+          <html:input id="sidebarIndependent" class="switch" type="checkbox" />
+          <html:span class="value" id="sidebarIndependent-value"></html:span>
+        </html:div>
+
+        <html:section class="sidebar-controls" id="sidebarControls">
+          <html:div class="row">
+            <html:label for="sidebarBackgroundTransparency">侧栏透明度</html:label>
+            <html:input id="sidebarBackgroundTransparency" type="range" min="0.35" max="0.92" step="0.01" />
+            <html:span class="value" id="sidebarBackgroundTransparency-value"></html:span>
+          </html:div>
+
+          <html:div class="row">
+            <html:label for="sidebarBlurStrength">侧栏模糊</html:label>
+            <html:input id="sidebarBlurStrength" type="range" min="0" max="100" step="1" />
+            <html:span class="value" id="sidebarBlurStrength-value"></html:span>
+          </html:div>
+
+          <html:div class="row">
+            <html:label for="sidebarBackgroundColor">侧栏颜色</html:label>
+            <html:input id="sidebarBackgroundColor" type="color" />
+            <html:span class="value" id="sidebarBackgroundColor-value"></html:span>
+          </html:div>
+        </html:section>
+
+      </html:section>
+
+      <html:div class="actions">
+        <html:button class="action" id="reset" type="button">恢复默认</html:button>
+        <html:button class="action" id="apply" type="button">保存并应用</html:button>
+        <html:button class="action" id="close" type="button">关闭</html:button>
+      </html:div>
+    </html:main>
+
+    <html:script><![CDATA[
+      const api = window.arguments[0];
+      const inputIDs = ["backgroundTransparency", "blurStrength", "backgroundColor"];
+      const sidebarInputMap = {
+        sidebarBackgroundTransparency: "backgroundTransparency",
+        sidebarBlurStrength: "blurStrength",
+        sidebarBackgroundColor: "backgroundColor",
+      };
+      const sidebarInputIDs = Object.keys(sidebarInputMap);
+      const materialNames = {
+        auto: "自动",
+        hud: "HUD",
+        underWindow: "窗口",
+        sidebar: "侧边栏",
+        menu: "菜单",
+        window: "普通",
+      };
+      const formatters = {
+        backgroundTransparency: value => `${Math.round(Number(value) * 100)}%`,
+        blurStrength: value => `${Math.round(Number(value))}%`,
+        backgroundColor: value => String(value).toUpperCase(),
+        glassMaterial: value => materialNames[value] || value,
+      };
+
+      let config = null;
+      let writeTimer = null;
+      let statusTimer = null;
+
+      function setStatus(kind, text) {
+        const node = document.getElementById("apply-status");
+        node.className = `status ${kind || ""}`.trim();
+        node.textContent = text;
+        clearTimeout(statusTimer);
+      }
+
+      function currentAppearanceConfig() {
+        return config;
+      }
+
+      function currentSidebarConfig() {
+        return config.sidebar;
+      }
+
+      function mergeDefaults(next) {
+        const incoming = next || {};
+        const merged = JSON.parse(JSON.stringify(api.defaults));
+        Object.assign(merged, incoming);
+        merged.sidebar = { ...api.defaults.sidebar, ...(incoming.sidebar || {}) };
+        merged.sidebarIndependent = incoming.sidebarIndependent === true;
+        return merged;
+      }
+
+      function setMaterial(value) {
+        const material = materialNames[value] ? value : "auto";
+        for (const option of document.querySelectorAll(".material-option")) {
+          option.classList.toggle("is-selected", option.dataset.material === material);
+        }
+        document.getElementById("glassMaterial-value").textContent = formatters.glassMaterial(material);
+      }
+
+      function getMaterial() {
+        return document.querySelector(".material-option.is-selected")?.dataset.material || "auto";
+      }
+
+      function readControlsIntoConfig() {
+        renderValuesOnly();
+        return config;
+      }
+
+      function readMainControlsIntoConfig() {
+        const appearance = currentAppearanceConfig();
+        for (const id of inputIDs) {
+          const input = document.getElementById(id);
+          appearance[id] = input.type === "range" ? Number(input.value) : input.value;
+        }
+        appearance.glassMaterial = getMaterial();
+      }
+
+      function readSidebarControlsIntoConfig() {
+        config.sidebarIndependent = document.getElementById("sidebarIndependent").checked;
+        const sidebar = currentSidebarConfig();
+        for (const id of sidebarInputIDs) {
+          const input = document.getElementById(id);
+          const key = sidebarInputMap[id];
+          sidebar[key] = input.type === "range" ? Number(input.value) : input.value;
+        }
+      }
+
+      function updateSidebarEnabled() {
+        const enabled = document.getElementById("sidebarIndependent").checked;
+        document.getElementById("sidebarControls").classList.toggle("is-disabled", !enabled);
+        document.getElementById("sidebarIndependent-value").textContent = enabled ? "独立" : "跟随";
+        for (const id of sidebarInputIDs) {
+          document.getElementById(id).disabled = !enabled;
+        }
+      }
+
+      function render(next) {
+        config = mergeDefaults(next);
+        const appearance = currentAppearanceConfig();
+        for (const id of inputIDs) {
+          document.getElementById(id).value = appearance[id];
+          document.getElementById(`${id}-value`).textContent = formatters[id](appearance[id]);
+        }
+        setMaterial(appearance.glassMaterial);
+        document.getElementById("sidebarIndependent").checked = config.sidebarIndependent === true;
+        const sidebar = currentSidebarConfig();
+        for (const id of sidebarInputIDs) {
+          const key = sidebarInputMap[id];
+          document.getElementById(id).value = sidebar[key];
+          document.getElementById(`${id}-value`).textContent = formatters[key](sidebar[key]);
+        }
+        updateSidebarEnabled();
+      }
+
+      function renderValuesOnly() {
+        readMainControlsIntoConfig();
+        readSidebarControlsIntoConfig();
+        const appearance = currentAppearanceConfig();
+        for (const id of inputIDs) {
+          document.getElementById(`${id}-value`).textContent = formatters[id](appearance[id]);
+        }
+        document.getElementById("glassMaterial-value").textContent = formatters.glassMaterial(appearance.glassMaterial);
+        const sidebar = currentSidebarConfig();
+        for (const id of sidebarInputIDs) {
+          const key = sidebarInputMap[id];
+          document.getElementById(`${id}-value`).textContent = formatters[key](sidebar[key]);
+        }
+        updateSidebarEnabled();
+      }
+
+      function saveNow(text = "已应用") {
+        renderValuesOnly();
+        try {
+          render(api.writeConfig(readControlsIntoConfig()));
+          setStatus("saved", text);
+          statusTimer = setTimeout(() => setStatus("", "已就绪"), 1200);
+        } catch (error) {
+          setStatus("error", "失败");
+          console.error(error);
+        }
+      }
+
+      function scheduleSave() {
+        renderValuesOnly();
+        setStatus("", "应用中");
+        clearTimeout(writeTimer);
+        writeTimer = setTimeout(() => saveNow(), 120);
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        render(api.readConfig());
+        for (const id of inputIDs) {
+          document.getElementById(id).addEventListener("input", scheduleSave);
+          document.getElementById(id).addEventListener("change", scheduleSave);
+        }
+        for (const id of sidebarInputIDs) {
+          document.getElementById(id).addEventListener("input", scheduleSave);
+          document.getElementById(id).addEventListener("change", scheduleSave);
+        }
+        document.getElementById("sidebarIndependent").addEventListener("change", scheduleSave);
+        for (const option of document.querySelectorAll(".material-option")) {
+          option.addEventListener("click", () => {
+            setMaterial(option.dataset.material);
+            scheduleSave();
+          });
+        }
+        document.getElementById("apply").addEventListener("click", () => saveNow("已应用"));
+        document.getElementById("reset").addEventListener("click", () => {
+          try {
+            render(api.resetConfig());
+            setStatus("saved", "已重置");
+          } catch (error) {
+            setStatus("error", "失败");
+            console.error(error);
+          }
+        });
+        document.getElementById("close").addEventListener("click", () => window.close());
+      });
+    ]]></html:script>
+  </html:body>
+</window>

@@ -1,0 +1,505 @@
+:root[zotero-glass-active="true"],
+:root[zotero-glass-active="true"] window,
+:root[zotero-glass-active="true"] dialog,
+:root[zotero-glass-active="true"] #zotero-pane,
+:root[zotero-glass-active="true"] #zotero-layout,
+:root[zotero-glass-active="true"] #zotero-collections-pane,
+:root[zotero-glass-active="true"] #zotero-items-pane,
+:root[zotero-glass-active="true"] #zotero-item-pane,
+:root[zotero-glass-active="true"] #zotero-context-pane,
+:root[zotero-glass-active="true"] #zotero-view-tabbox,
+:root[zotero-glass-active="true"] #zotero-view-tabbox-deck,
+:root[zotero-glass-active="true"] #zotero-tabs,
+:root[zotero-glass-active="true"] #zotero-collections-tree,
+:root[zotero-glass-active="true"] #zotero-items-tree,
+:root[zotero-glass-active="true"] #zotero-items-tree-container,
+:root[zotero-glass-active="true"] #zotero-item-pane-content,
+:root[zotero-glass-active="true"] #zotero-item-pane-message-box,
+:root[zotero-glass-active="true"] #zotero-tb-wrapper,
+:root[zotero-glass-active="true"] #zotero-toolbar,
+:root[zotero-glass-active="true"] #zotero-items-toolbar,
+:root[zotero-glass-active="true"] #zotero-collections-toolbar,
+:root[zotero-glass-active="true"] .zotero-pane,
+:root[zotero-glass-active="true"] .virtualized-table,
+:root[zotero-glass-active="true"] .virtualized-table-body,
+:root[zotero-glass-active="true"] .item-pane,
+:root[zotero-glass-active="true"] .splitter,
+:root[zotero-glass-active="true"] tree,
+:root[zotero-glass-active="true"] treechildren,
+:root[zotero-glass-active="true"] richlistbox,
+:root[zotero-glass-active="true"] listbox {
+  -moz-appearance: none !important;
+  background-color: transparent !important;
+}
+
+:root[zotero-glass-active="true"] {
+  --material-background: rgba(7, 9, 10, 0.18) !important;
+  --material-stripe: rgba(255, 255, 255, 0.034) !important;
+  --material-sidepane: rgba(8, 10, 11, 0.24) !important;
+  --material-toolbar: rgba(8, 10, 11, 0.24) !important;
+  --material-mix-quinary: rgba(255, 255, 255, 0.07) !important;
+  --material-mix-quarternary: rgba(255, 255, 255, 0.1) !important;
+  --color-panedivider: rgba(255, 255, 255, 0.07) !important;
+  --material-panedivider: 1px solid rgba(255, 255, 255, 0.07) !important;
+  --color-scrollbar-background: rgba(0, 0, 0, 0.12) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-toolbar,
+:root[zotero-glass-active="true"] #zotero-items-toolbar,
+:root[zotero-glass-active="true"] #zotero-collections-toolbar {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table,
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table-body,
+:root[zotero-glass-active="true"] #zotero-items-tree .windowed-list,
+:root[zotero-glass-active="true"] #zotero-items-tree .drag-image-container {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table-header {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.008)),
+    rgba(7, 9, 10, 0.18) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(42px) saturate(1.45) !important;
+  -webkit-backdrop-filter: blur(42px) saturate(1.45) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table-header .cell,
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table-header .label,
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table-header .resizer {
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+:root[zotero-glass-active="true"] .virtualized-table .row,
+:root[zotero-glass-active="true"] .virtualized-table-row,
+:root[zotero-glass-active="true"] treechildren::-moz-tree-row {
+  background-color: rgba(255, 255, 255, 0.018) !important;
+}
+
+:root[zotero-glass-active="true"] .virtualized-table .row:nth-child(even),
+:root[zotero-glass-active="true"] .virtualized-table-row:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.034) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row.odd:not(.selected),
+:root[zotero-glass-active="true"] #zotero-items-tree .drag-image-container .row.odd:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.028) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row.even:not(.selected),
+:root[zotero-glass-active="true"] #zotero-items-tree .drag-image-container .row.even:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.014) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+:root[zotero-glass-active="true"] .virtualized-table .row.selected,
+:root[zotero-glass-active="true"] treechildren::-moz-tree-row(selected) {
+  background-color: color-mix(in srgb, AccentColor 80%, transparent) !important;
+}
+
+:root[zotero-glass-active="true"] splitter,
+:root[zotero-glass-active="true"] #zotero-collections-splitter,
+:root[zotero-glass-active="true"] #zotero-item-pane-splitter {
+  -moz-appearance: none !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tags-splitter,
+:root[zotero-glass-active="true"] #zotero-collections-splitter {
+  overflow: hidden !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tags-splitter {
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.055) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-collections-splitter {
+  box-shadow: inset 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tags-splitter::before,
+:root[zotero-glass-active="true"] #zotero-tags-splitter::after,
+:root[zotero-glass-active="true"] #zotero-collections-splitter::before,
+:root[zotero-glass-active="true"] #zotero-collections-splitter::after,
+:root[zotero-glass-active="true"] #zotero-tags-splitter > grippy,
+:root[zotero-glass-active="true"] #zotero-collections-splitter > grippy {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tag-selector-container,
+:root[zotero-glass-active="true"] #zotero-tag-selector,
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector,
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector-filter-pane,
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector-filter-container {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tag-selector-container,
+:root[zotero-glass-active="true"] #zotero-tag-selector {
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector-filter-pane {
+  width: 100% !important;
+  padding-inline: 8px !important;
+  overflow: hidden !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector-filter-container {
+  width: 100% !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector-filter-container .search {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  flex: 1 1 0 !important;
+  overflow: hidden !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector-filter-container .search > *,
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector-filter-container .search input {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-tag-selector .tag-selector-actions {
+  flex: 0 0 auto !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-collections-pane {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-collections-pane[collapsed="true"] {
+  max-width: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-collections-pane[collapsed="true"] #zotero-toolbar-collection-tree,
+:root[zotero-glass-active="true"] #zotero-collections-pane[collapsed="true"] #zotero-collections-tree-container,
+:root[zotero-glass-active="true"] #zotero-collections-pane[collapsed="true"] #zotero-tags-splitter,
+:root[zotero-glass-active="true"] #zotero-collections-pane[collapsed="true"] #zotero-tag-selector-container {
+  visibility: collapse !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-collections-pane,
+:root[zotero-glass-active="true"] #zotero-item-pane,
+:root[zotero-glass-active="true"] #zotero-context-pane {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01)),
+    rgba(10, 13, 14, 0.22) !important;
+  backdrop-filter: blur(32px) saturate(1.35) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-items-pane,
+:root[zotero-glass-active="true"] #zotero-items-tree-container,
+:root[zotero-glass-active="true"] #zotero-item-pane-content {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0)),
+    rgba(6, 8, 9, 0.18) !important;
+}
+
+body.sidebar-open,
+body.portal,
+body.enable-vertical-split-view,
+body.enable-horizontal-split-view,
+#reader,
+#reader-ui,
+#split-view,
+.split-view,
+.primary-view,
+.secondary-view {
+  background-color: transparent !important;
+}
+
+#reader,
+#reader-ui {
+  color-scheme: dark !important;
+}
+
+#sidebarContainer,
+#sidebarContent,
+.reader-sidebar,
+.sidebar,
+.sidepane,
+#item-pane,
+#context-pane,
+#zotero-item-pane,
+#zotero-context-pane,
+.item-pane,
+.context-pane,
+.metadata-pane,
+#annotationsView,
+#annotationsView .annotations,
+#annotationsView .selector,
+#thumbnailView,
+#outlineView,
+.thumbnails-view,
+.thumbnails-view .thumbnails,
+.outline-view {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)),
+    rgba(10, 13, 14, 0.26) !important;
+  backdrop-filter: blur(40px) saturate(1.45) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.45) !important;
+}
+
+:root[zotero-glass-active="true"] .zotero-glass-status-chip,
+.zotero-glass-status-chip {
+  opacity: 1 !important;
+  isolation: isolate !important;
+  background-color: var(--zotero-glass-status-bg) !important;
+  background-image: none !important;
+  color: var(--zotero-glass-status-fg) !important;
+  border-color: var(--zotero-glass-status-border) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.18) !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:root[zotero-glass-active="true"] .zotero-glass-status-chip *,
+.zotero-glass-status-chip * {
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
+:root[zotero-glass-active="true"] .zotero-glass-status-chip span,
+.zotero-glass-status-chip span {
+  color: var(--zotero-glass-status-fg) !important;
+}
+
+:root[zotero-glass-active="true"] .zotero-glass-status-chip .circle > div,
+.zotero-glass-status-chip .circle > div,
+:root[zotero-glass-active="true"] .zotero-glass-status-chip [style*="0.6rem"],
+.zotero-glass-status-chip [style*="0.6rem"] {
+  background-color: var(--zotero-glass-status-dot) !important;
+}
+
+.zotero-glass-status-chip[data-zotero-glass-status="done"] {
+  background-color: #5D9478 !important;
+  color: #F3FFF8 !important;
+}
+
+.zotero-glass-status-chip[data-zotero-glass-status="reading"] {
+  background-color: #B9974D !important;
+  color: #FFF8E8 !important;
+}
+
+.zotero-glass-status-chip[data-zotero-glass-status="unread"] {
+  background-color: #6FAFDB !important;
+  color: #FFFFFF !important;
+}
+
+#sidebarContainer {
+  background: transparent !important;
+  background-image: none !important;
+  border-color: rgba(255, 255, 255, 0.055) !important;
+  box-shadow:
+    inset -1px 0 rgba(255, 255, 255, 0.05),
+    inset 1px 0 rgba(0, 0, 0, 0.26) !important;
+}
+
+[dir="rtl"] #sidebarContainer {
+  box-shadow:
+    inset 1px 0 rgba(255, 255, 255, 0.05),
+    inset -1px 0 rgba(0, 0, 0, 0.26) !important;
+}
+
+#sidebarContent,
+#sidebarContainer .sidebar-toolbar,
+#thumbnailView,
+#thumbnailsView,
+#outlineView,
+#annotationsView,
+#annotationsView .annotations,
+#annotationsView .selector {
+  background: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#viewerContainer,
+#viewer,
+.pdfViewer {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+#sidebarContainer .sidebar-toolbar,
+.toolbar,
+.secondaryToolbar,
+.findbar {
+  background: transparent !important;
+  background-image: none !important;
+  border-color: rgba(255, 255, 255, 0.065) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* unified-reader-glass */
+#reader-ui,
+#reader-ui > .toolbar,
+#reader-ui #sidebarContainer,
+#reader-ui #sidebarContent,
+#reader-ui #sidebarContainer .sidebar-toolbar,
+#reader-ui #sidebarContent .viewWrapper,
+#reader-ui #thumbnailsView,
+#reader-ui #outlineView,
+#reader-ui #annotationsView,
+#reader-ui #split-view,
+#reader-ui .split-view,
+#reader-ui .primary-view,
+#reader-ui .secondary-view,
+#viewerContainer,
+#viewer,
+.pdfViewer,
+:root[zotero-glass-reader-active="true"] #zotero-item-pane,
+:root[zotero-glass-reader-active="true"] #zotero-context-pane,
+:root[zotero-glass-reader-active="true"] #zotero-context-pane-inner,
+:root[zotero-glass-reader-active="true"] .zotero-context-pane,
+:root[zotero-glass-reader-active="true"] .zotero-context-pane-inner,
+:root[zotero-glass-reader-active="true"] .zotero-context-panes-deck {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Reader controls need a readable surface above the continuous window glass. */
+#reader-ui .view-popup,
+#reader-ui .selection-popup,
+#reader-ui .annotation-popup,
+#reader-ui .label-popup,
+#reader-ui .appearance-popup,
+#reader-ui .find-popup,
+#reader-ui .preview-popup,
+#reader-ui .link-popup,
+#reader-ui .citation-popup,
+#reader-ui .reference-popup,
+#reader-ui .footnote-popup,
+#reader-ui .context-menu,
+#reader-ui .read-aloud-annotation-popup {
+  --zotero-glass-popup-bg: rgba(16, 19, 21, 0.68);
+  --color-background: rgba(16, 19, 21, 0.78) !important;
+  --color-panedivider: rgba(255, 255, 255, 0.14) !important;
+  --material-toolbar: var(--zotero-glass-popup-bg) !important;
+  --material-background: rgba(255, 255, 255, 0.065) !important;
+  --material-button: rgba(255, 255, 255, 0.12) !important;
+  background: var(--zotero-glass-popup-bg) !important;
+  background-image: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: rgba(246, 248, 249, 0.94) !important;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.08),
+    0 14px 38px rgba(0, 0, 0, 0.44),
+    0 2px 8px rgba(0, 0, 0, 0.34) !important;
+  backdrop-filter: blur(56px) saturate(1.42) !important;
+  -webkit-backdrop-filter: blur(56px) saturate(1.42) !important;
+  isolation: isolate !important;
+}
+
+#reader-ui .view-popup input,
+#reader-ui .view-popup textarea,
+#reader-ui .label-popup input,
+#reader-ui .find-popup input,
+#reader-ui .annotation-popup .content {
+  background-color: rgba(255, 255, 255, 0.075) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: rgba(248, 250, 251, 0.96) !important;
+}
+
+#reader-ui .selection-popup .tool-toggle,
+#reader-ui .appearance-popup .split-toggle {
+  background-color: rgba(255, 255, 255, 0.075) !important;
+}
+
+#reader-ui .selection-popup .tool-toggle .active,
+#reader-ui .appearance-popup .split-toggle button.active,
+#reader-ui .context-menu .row:hover,
+#reader-ui .context-menu .row:focus {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.98) !important;
+}
+
+:root[zotero-glass-reader-active="true"] #zotero-item-pane *,
+:root[zotero-glass-reader-active="true"] #zotero-context-pane * {
+  --material-sidepane: transparent !important;
+  --material-background: transparent !important;
+}
+
+#annotationsView .annotations .annotation,
+#annotationsView textarea,
+#annotationsView input,
+.toolbar-text-input {
+  background-color: rgba(255, 255, 255, 0.052) !important;
+  border-color: rgba(255, 255, 255, 0.085) !important;
+  color: rgba(245, 247, 248, 0.92) !important;
+}
+
+#sidebarResizer,
+.sidebar-resizer,
+.split-view-resizer {
+  background-color: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.035) !important;
+}
+
+#sidebarResizer::before,
+.sidebar-resizer::before {
+  background-color: transparent !important;
+}
+
+.pdfViewer .page {
+  background-color: white !important;
+}
+
+#zotero-glass-toolbarbutton {
+  -moz-appearance: none !important;
+  list-style-image: url("chrome://zotero-glass/content/zotero-glass.svg") !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  margin-inline: 4px !important;
+  padding: 4px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 7px !important;
+  background-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+#zotero-glass-toolbarbutton .toolbarbutton-icon {
+  width: 17px !important;
+  height: 17px !important;
+}
+
+#zotero-glass-toolbarbutton .toolbarbutton-text {
+  display: none !important;
+}
+
+#zotero-glass-toolbarbutton:hover {
+  background-color: rgba(255, 255, 255, 0.13) !important;
+}

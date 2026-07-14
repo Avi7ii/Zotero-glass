@@ -1,0 +1,19 @@
+{
+  "manifest_version": 2,
+  "name": "Zotero Glass",
+  "version": "0.2.35",
+  "description": "Native macOS NSVisualEffectView glass for Zotero. macOS only.",
+  "author": "Avi7ii",
+  "homepage_url": "https://github.com/Avi7ii/Zotero-glass",
+  "icons": {
+    "48": "chrome/content/zotero-glass.svg",
+    "96": "chrome/content/zotero-glass.svg"
+  },
+  "applications": {
+    "zotero": {
+      "id": "zotero-glass@avi7ii.github.io",
+      "strict_min_version": "9.0",
+      "strict_max_version": "9.*"
+    }
+  }
+}

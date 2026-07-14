@@ -73,10 +73,6 @@ The complete runtime ships inside one XPI. No helper application, LaunchAgent, `
   <img src="docs/assets/library.png" width="94%" alt="Zotero Glass library">
 </p>
 
-<p align="center">
-  <img src="docs/assets/reader.png" width="94%" alt="Zotero Glass PDF reader">
-</p>
-
 > Journal rankings, impact factors, and reading-status columns in the screenshots are supplied by Ethereal Style/EasyScholar. Zotero Glass integrates their appearance but does not generate academic ranking data.
 
 ---

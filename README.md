@@ -81,10 +81,6 @@ Zotero Glass 是一个面向 macOS 的 Zotero 原生材质插件。它通过 Zot
   <img src="docs/assets/library.png" width="94%" alt="Zotero Glass library">
 </p>
 
-<p align="center">
-  <img src="docs/assets/reader.png" width="94%" alt="Zotero Glass PDF reader">
-</p>
-
 > 截图中的期刊分区、影响因子和阅读状态来自 Ethereal Style/EasyScholar。Zotero Glass 负责玻璃材质与这些元素的视觉融合，不负责生成学术评价数据。
 
 ---

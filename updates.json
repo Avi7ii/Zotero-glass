@@ -5,7 +5,7 @@
         {
           "version": "0.2.36",
           "update_link": "https://github.com/Avi7ii/Zotero-glass/releases/download/v0.2.36/Zotero-Glass-0.2.36.xpi",
-          "update_hash": "sha256:26e37192f143277261b27c8ecaa84342f1c68ca4a659030a1b4a3501ec891d51",
+          "update_hash": "sha256:c6637ad75165b66e93f5efec7386659e53a3e15be38159e3e417fb815678830f",
           "applications": {
             "zotero": {
               "strict_min_version": "9.0",

@@ -11,6 +11,7 @@ var NativeGlassBridge = {
   types: null,
   f: null,
   maxTintRegions: 8,
+  contentBorderStates: new Map(),
 
   init(plugin) {
     if (this.available) {
@@ -231,9 +232,13 @@ var NativeGlassBridge = {
       msg_id_rect: this.objc.declare("objc_msgSend", c.default_abi, ID, ID, SEL, NSRect),
       msg_id_d4: this.objc.declare("objc_msgSend", c.default_abi, ID, ID, SEL, CGFloat, CGFloat, CGFloat, CGFloat),
       msg_bool_id: this.objc.declare("objc_msgSend", c.default_abi, BOOL, ID, SEL, ID),
+      msg_bool_ulong: this.objc.declare("objc_msgSend", c.default_abi, BOOL, ID, SEL, NSUInteger),
+      msg_double_ulong: this.objc.declare("objc_msgSend", c.default_abi, CGFloat, ID, SEL, NSUInteger),
       msg_ulong: this.objc.declare("objc_msgSend", c.default_abi, NSUInteger, ID, SEL),
       msg_void: this.objc.declare("objc_msgSend", c.default_abi, c.void_t, ID, SEL),
       msg_void_bool: this.objc.declare("objc_msgSend", c.default_abi, c.void_t, ID, SEL, BOOL),
+      msg_void_bool_ulong: this.objc.declare("objc_msgSend", c.default_abi, c.void_t, ID, SEL, BOOL, NSUInteger),
+      msg_void_double_ulong: this.objc.declare("objc_msgSend", c.default_abi, c.void_t, ID, SEL, CGFloat, NSUInteger),
       msg_void_id: this.objc.declare("objc_msgSend", c.default_abi, c.void_t, ID, SEL, ID),
       msg_void_id_long_id: this.objc.declare("objc_msgSend", c.default_abi, c.void_t, ID, SEL, ID, NSInteger, ID),
       msg_void_long: this.objc.declare("objc_msgSend", c.default_abi, c.void_t, ID, SEL, NSInteger),
@@ -265,7 +270,11 @@ var NativeGlassBridge = {
 
     for (let i = 0; i < count; i++) {
       const window = this.f.msg_id_ulong(windows, this.sel("objectAtIndex:"), i);
+      const isMainWindow = this.isZoteroMainWindow(window);
       this.applyToWindow(window, rgb, alpha, material);
+      if (isMainWindow) {
+        this.suppressContentBorders(window);
+      }
     }
     return 0;
   },
@@ -287,7 +296,9 @@ var NativeGlassBridge = {
       if (!this.isNil(effect)) {
         this.f.msg_void(effect, this.sel("removeFromSuperview"));
       }
+      this.restoreContentBorders(window);
     }
+    this.contentBorderStates.clear();
     return 0;
   },
 
@@ -329,7 +340,7 @@ var NativeGlassBridge = {
     this.f.msg_void_long(effectView, this.sel("setMaterial:"), material);
     this.f.msg_void_long(effectView, this.sel("setBlendingMode:"), 0);
     this.f.msg_void_long(effectView, this.sel("setState:"), 1);
-    this.f.msg_void_bool(effectView, this.sel("setEmphasized:"), 1);
+    this.f.msg_void_bool(effectView, this.sel("setEmphasized:"), 0);
 
     let tintView = this.findSubviewWithIdentifier(effectView, "ZoteroGlassTintView");
     if (this.isNil(tintView)) {
@@ -424,6 +435,95 @@ var NativeGlassBridge = {
     );
   },
 
+  windowKey(window) {
+    try {
+      return String(window || "");
+    } catch (error) {
+      return "";
+    }
+  },
+
+  suppressContentBorders(window) {
+    const key = this.windowKey(window);
+    if (!key) {
+      return;
+    }
+
+    if (!this.contentBorderStates.has(key)) {
+      const edges = [0, 1, 2, 3];
+      this.contentBorderStates.set(key, {
+        window,
+        edges: edges.map(edge => ({
+          edge,
+          automatic: Boolean(
+            this.f.msg_bool_ulong(
+              window,
+              this.sel("autorecalculatesContentBorderThicknessForEdge:"),
+              edge
+            )
+          ),
+          thickness: Number(
+            this.f.msg_double_ulong(
+              window,
+              this.sel("contentBorderThicknessForEdge:"),
+              edge
+            )
+          ),
+        })),
+      });
+    }
+
+    for (const edge of [0, 1, 2, 3]) {
+      this.f.msg_void_bool_ulong(
+        window,
+        this.sel("setAutorecalculatesContentBorderThickness:forEdge:"),
+        0,
+        edge
+      );
+      this.f.msg_void_double_ulong(
+        window,
+        this.sel("setContentBorderThickness:forEdge:"),
+        0,
+        edge
+      );
+    }
+  },
+
+  restoreContentBorders(window) {
+    const key = this.windowKey(window);
+    const state = key ? this.contentBorderStates.get(key) : null;
+    if (!state) {
+      return;
+    }
+
+    for (const edgeState of state.edges) {
+      this.f.msg_void_double_ulong(
+        window,
+        this.sel("setContentBorderThickness:forEdge:"),
+        edgeState.thickness,
+        edgeState.edge
+      );
+      this.f.msg_void_bool_ulong(
+        window,
+        this.sel("setAutorecalculatesContentBorderThickness:forEdge:"),
+        edgeState.automatic ? 1 : 0,
+        edgeState.edge
+      );
+    }
+    this.contentBorderStates.delete(key);
+  },
+
+  isZoteroMainWindow(window) {
+    try {
+      const title = this.f.msg_id(window, this.sel("title"));
+      return !this.isNil(title) && Boolean(
+        this.f.msg_bool_id(title, this.sel("isEqualToString:"), this.nsString("Zotero"))
+      );
+    } catch (error) {
+      return false;
+    }
+  },
+
   importCtypes() {
     if (typeof ChromeUtils !== "undefined" && ChromeUtils?.importESModule) {
       const module = ChromeUtils.importESModule("resource://gre/modules/ctypes.sys.mjs");
@@ -470,22 +570,31 @@ var NativeGlassBridge = {
 };
 
 var ZoteroGlass = {
-  version: "0.2.35",
+  version: "0.2.45",
   pluginID: "zotero-glass@avi7ii.github.io",
   menuID: "zotero-glass-menuitem",
   separatorID: "zotero-glass-menuseparator",
   toolbarbuttonID: "zotero-glass-toolbarbutton",
   stylesheetID: "zotero-glass-stylesheet",
+  preferencePaneID: "zotero-glass-preferences",
+  preferencePaneRegistered: false,
+  rootURI: null,
   globalSheetRegistered: false,
   globalSheetURI: null,
   configSheetURI: null,
   configSheetRegistered: false,
-  readerWatcherTimer: null,
-  uiRepairTimer: null,
-  uiRepairTimeouts: [],
+  readerRenderHandler: null,
+  readerTabObserver: null,
+  readerTabObserverID: null,
+  stylePluginLifecycleObserver: null,
+  styleTagIntegrationActive: false,
+  styleRenderHooks: new Map(),
+  styleTagBackgroundOpacity: 0.85,
+  appShutdownReason: 2,
   previousToolbarTheme: null,
   defaults: {
     sidebarIndependent: true,
+    styleTagBackgroundOpacity: 0.85,
     backgroundTransparency: 0.73,
     blurStrength: 92,
     backgroundColor: "#1A1A1A",
@@ -495,29 +604,6 @@ var ZoteroGlass = {
       blurStrength: 100,
       backgroundColor: "#06090A",
       glassMaterial: "sidebar",
-    },
-  },
-  statusTagColors: {
-    "/done": {
-      name: "done",
-      background: "#5D9478",
-      foreground: "#F3FFF8",
-      border: "#75B594",
-      dot: "#FFFFFF",
-    },
-    "/reading": {
-      name: "reading",
-      background: "#B9974D",
-      foreground: "#FFF8E8",
-      border: "#D3B36B",
-      dot: "#FFFFFF",
-    },
-    "/unread": {
-      name: "unread",
-      background: "#6FAFDB",
-      foreground: "#FFFFFF",
-      border: "#91C7EB",
-      dot: "#FFFFFF",
     },
   },
   get configPath() {
@@ -530,17 +616,20 @@ var ZoteroGlass = {
     return home + "/Library/Logs/ZoteroGlassPlugin.log";
   },
 
-  async startup() {
+  async startup(rootURI) {
     await Zotero.initializationPromise;
+    this.rootURI = rootURI;
+    Zotero.ZoteroGlass = this;
     this.forceDarkMode();
     this.ensureConfig();
+    await this.registerPreferencePane();
     this.registerGlobalStylesheet();
+    this.startStyleTagIntegration();
     this.addToAllWindows();
     const ok = NativeGlassBridge.init(this);
     this.log("started " + this.version + " native=" + ok);
     this.writeConfig(this.readConfig());
-    this.startReaderWatcher();
-    this.startUIRepairWatcher();
+    this.startReaderLifecycleIntegration();
     Zotero.debug("Zotero Glass started");
   },
 
@@ -551,11 +640,15 @@ var ZoteroGlass = {
     }
     this.unregisterConfigStylesheet();
     this.unregisterGlobalStylesheet();
-    this.stopReaderWatcher();
-    this.stopUIRepairWatcher();
+    this.stopReaderLifecycleIntegration();
+    this.stopStyleTagIntegration();
     this.cleanupInjectedDocumentStyles();
     NativeGlassBridge.shutdown();
     this.restoreToolbarTheme();
+    this.unregisterPreferencePane();
+    if (Zotero.ZoteroGlass === this) {
+      delete Zotero.ZoteroGlass;
+    }
   },
 
   addToAllWindows() {
@@ -579,8 +672,8 @@ var ZoteroGlass = {
     this.installMenuItem(win);
     this.installToolbarButton(win);
     this.applyConfig(this.readConfig());
-    this.startReaderWatcher();
-    this.startUIRepairWatcher();
+    this.installStyleTagRenderHook(win);
+    this.refreshVisibleStyleTags(doc);
   },
 
   onMainWindowUnload(win) {
@@ -591,6 +684,7 @@ var ZoteroGlass = {
     doc?.getElementById(this.separatorID)?.remove();
     doc?.getElementById(this.toolbarbuttonID)?.remove();
     doc?.getElementById(this.stylesheetID)?.remove();
+    this.removeStyleTagRenderHook(win);
     this.cleanupDocumentStyles(doc);
   },
 
@@ -759,6 +853,7 @@ ${this.readerSidebarGlassCSS(this.sidebarAppearanceConfig(next))}
     const channels = this.cssRgbChannels(config.backgroundColor);
     const alpha = this.overlayAlphaForTransparency(config.backgroundTransparency);
     const strongAlpha = this.clamp(alpha + 0.055, 0.08, 0.72);
+    const toolbarAlpha = this.clamp(alpha + 0.10, 0.14, 0.32);
     const borderAlpha = this.clamp(alpha + 0.06, 0.08, 0.58);
     const blur = Math.round(this.clamp(config.blurStrength, 0, 100) * 1.55);
     const saturation = (1.08 + this.clamp(config.blurStrength, 0, 100) / 100 * 0.52).toFixed(2);
@@ -768,6 +863,7 @@ ${this.readerSidebarGlassCSS(this.sidebarAppearanceConfig(next))}
   --zotero-glass-sidebar-rgb: ${channels};
   --zotero-glass-sidebar-bg: rgba(${channels}, ${alpha.toFixed(3)});
   --zotero-glass-sidebar-bg-strong: rgba(${channels}, ${strongAlpha.toFixed(3)});
+  --zotero-glass-reader-toolbar-bg: rgba(${channels}, ${toolbarAlpha.toFixed(3)});
   --zotero-glass-sidebar-border: rgba(255, 255, 255, ${borderAlpha.toFixed(3)});
   --zotero-glass-sidebar-blur: ${blur}px;
   --zotero-glass-sidebar-saturate: ${saturation};
@@ -934,7 +1030,6 @@ body.sidebar-open #sidebarContainer {
 
 /* unified-reader-glass */
 #reader-ui,
-#reader-ui > .toolbar,
 #reader-ui #sidebarContainer,
 #reader-ui #sidebarContent,
 #reader-ui #sidebarContainer .sidebar-toolbar,
@@ -960,6 +1055,17 @@ body.sidebar-open #sidebarContainer {
   background-image: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+#reader-ui > .toolbar,
+#reader > .toolbar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.008)),
+    var(--zotero-glass-reader-toolbar-bg) !important;
+  background-color: var(--zotero-glass-reader-toolbar-bg) !important;
+  border-bottom: 1px solid var(--zotero-glass-sidebar-border) !important;
+  backdrop-filter: blur(42px) saturate(1.45) !important;
+  -webkit-backdrop-filter: blur(42px) saturate(1.45) !important;
 }
 `;
   },
@@ -989,115 +1095,282 @@ body.sidebar-open #sidebarContainer {
     }
   },
 
-  openPreferences(win) {
-    const api = {
+  preferenceAPI() {
+    return {
       defaults: this.defaults,
       nativeStatus: () => this.nativeStatus(),
       readConfig: () => this.readConfigWithStatus(),
       writeConfig: config => this.writeConfig(config),
       resetConfig: () => this.writeConfig(this.defaults),
+      applyCurrent: () => this.applyConfig(this.readConfig()),
     };
-    const dialog = win.openDialog(
-      "chrome://zotero-glass/content/preferences.xhtml",
-      "zotero-glass-preferences",
-      "chrome,centerscreen,resizable",
-      api
-    );
-    if (dialog) {
-      dialog.addEventListener("load", () => {
-        try {
-          dialog.document.documentElement.setAttribute("zotero-glass-active", "true");
-          this.installStylesheet(dialog.document);
-          this.applyConfig(this.readConfig());
-        } catch (error) {
-          this.log("preferences native glass apply failed: " + error);
-        }
-      }, { once: true });
+  },
+
+  async registerPreferencePane() {
+    if (this.preferencePaneRegistered || !this.rootURI) {
+      return this.preferencePaneRegistered;
+    }
+    try {
+      const stalePane = Zotero.PreferencePanes.pluginPanes?.find(
+        pane => pane.id === this.preferencePaneID && pane.pluginID === this.pluginID
+      );
+      if (stalePane) {
+        Zotero.PreferencePanes.unregister(stalePane.id);
+        this.log("stale preference pane registration removed: " + stalePane.id);
+      }
+      await Zotero.PreferencePanes.register({
+        pluginID: this.pluginID,
+        id: this.preferencePaneID,
+        label: "Glass",
+        image: this.rootURI + "chrome/content/zotero-glass.svg",
+        src: this.rootURI + "chrome/content/preferences.xhtml",
+      });
+      this.preferencePaneRegistered = true;
+      this.log("preference pane registered: " + this.preferencePaneID);
+      return true;
+    } catch (error) {
+      this.preferencePaneRegistered = false;
+      this.log("preference pane registration failed: " + error);
+      return false;
     }
   },
 
-  startReaderWatcher() {
-    if (this.readerWatcherTimer) {
+  unregisterPreferencePane() {
+    const pane = Zotero.PreferencePanes.pluginPanes?.find(
+      candidate =>
+        candidate.id === this.preferencePaneID && candidate.pluginID === this.pluginID
+    );
+    if (pane) {
+      Zotero.PreferencePanes.unregister(pane.id);
+      this.log("preference pane unregistered: " + pane.id);
+    }
+    this.preferencePaneRegistered = false;
+  },
+
+  openPreferences() {
+    Zotero.Utilities.Internal.openPreferences(this.preferencePaneID);
+  },
+
+  startReaderLifecycleIntegration() {
+    if (this.readerRenderHandler) {
       return;
     }
     try {
-      const hiddenWindow = Services.appShell.hiddenDOMWindow;
-      this.readerWatcherTimer = hiddenWindow.setInterval(() => {
+      this.readerRenderHandler = () => {
         try {
           this.applyReaderDocumentPreferences();
         } catch (error) {
-          this.log("reader watcher failed: " + error);
+          this.log("reader render integration failed: " + error);
         }
-      }, 900);
-      this.log("reader watcher started");
-    } catch (error) {
-      this.readerWatcherTimer = null;
-      this.log("reader watcher start failed: " + error);
-    }
-  },
-
-  stopReaderWatcher() {
-    if (!this.readerWatcherTimer) {
-      return;
-    }
-    try {
-      Services.appShell.hiddenDOMWindow.clearInterval(this.readerWatcherTimer);
-      this.log("reader watcher stopped");
-    } catch (error) {
-      this.log("reader watcher stop failed: " + error);
-    }
-    this.readerWatcherTimer = null;
-  },
-
-  startUIRepairWatcher() {
-    if (this.uiRepairTimer) {
-      return;
-    }
-    try {
-      const hiddenWindow = Services.appShell.hiddenDOMWindow;
-      this.uiRepairTimer = hiddenWindow.setInterval(() => {
-        try {
-          this.repairMainWindows();
-        } catch (error) {
-          this.log("ui repair watcher failed: " + error);
-        }
-      }, 1200);
-      this.uiRepairTimeouts = [250, 1200, 3000].map(delay =>
-        hiddenWindow.setTimeout(() => this.repairMainWindows(), delay)
+      };
+      Zotero.Reader.registerEventListener(
+        "renderToolbar",
+        this.readerRenderHandler,
+        this.pluginID
       );
-      this.log("ui repair watcher started");
+
+      this.readerTabObserver = {
+        notify: (_event, type) => {
+          if (type === "tab") {
+            this.syncReaderNativeTintCutout();
+          }
+        },
+      };
+      this.readerTabObserverID = Zotero.Notifier.registerObserver(
+        this.readerTabObserver,
+        ["tab"],
+        "zotero-glass-reader-tabs"
+      );
+      this.log("reader lifecycle integration started");
     } catch (error) {
-      this.uiRepairTimer = null;
-      this.log("ui repair watcher start failed: " + error);
+      this.readerRenderHandler = null;
+      this.readerTabObserver = null;
+      this.readerTabObserverID = null;
+      this.log("reader lifecycle integration start failed: " + error);
     }
   },
 
-  stopUIRepairWatcher() {
+  stopReaderLifecycleIntegration() {
     try {
-      const hiddenWindow = Services.appShell.hiddenDOMWindow;
-      if (this.uiRepairTimer) {
-        hiddenWindow.clearInterval(this.uiRepairTimer);
-        this.log("ui repair watcher stopped");
+      if (this.readerRenderHandler) {
+        // Zotero 9.0.6's public unregister method removes unrelated listeners.
+        // Use the same plugin-ID cleanup path Zotero invokes during add-on shutdown.
+        Zotero.Reader?._unregisterEventListenerByPluginID?.(this.pluginID);
       }
-      for (const timeout of this.uiRepairTimeouts) {
-        hiddenWindow.clearTimeout(timeout);
+      if (this.readerTabObserverID) {
+        Zotero.Notifier.unregisterObserver(this.readerTabObserverID);
       }
+      this.log("reader lifecycle integration stopped");
     } catch (error) {
-      this.log("ui repair watcher stop failed: " + error);
+      this.log("reader lifecycle integration stop failed: " + error);
     }
-    this.uiRepairTimer = null;
-    this.uiRepairTimeouts = [];
+    this.readerRenderHandler = null;
+    this.readerTabObserver = null;
+    this.readerTabObserverID = null;
   },
 
-  repairMainWindows() {
+  startStyleTagIntegration() {
+    this.styleTagIntegrationActive = true;
+    if (!this.stylePluginLifecycleObserver) {
+      this.stylePluginLifecycleObserver = {
+        startup: ({ id }) => {
+          if (this.isStylePluginID(id)) {
+            this.refreshStyleTagIntegration("style-startup");
+          }
+        },
+      };
+      Zotero.Plugins.addObserver(this.stylePluginLifecycleObserver);
+    }
+    this.refreshStyleTagIntegration("glass-startup");
+  },
+
+  stopStyleTagIntegration() {
+    this.styleTagIntegrationActive = false;
+    if (this.stylePluginLifecycleObserver) {
+      Zotero.Plugins.removeObserver(this.stylePluginLifecycleObserver);
+      this.stylePluginLifecycleObserver = null;
+    }
+    for (const [prototype, hook] of this.styleRenderHooks) {
+      if (prototype?._renderCell === hook.wrapper) {
+        prototype._renderCell = hook.original;
+      }
+    }
+    this.styleRenderHooks.clear();
+    this.log("Style tag render integration stopped");
+  },
+
+  isStylePluginID(id) {
+    return String(id || "").toLowerCase().includes("zoterostyle");
+  },
+
+  styleTagKindForDataKey(dataKey) {
+    const key = String(dataKey || "").toLowerCase();
+    if (key.endsWith("-status")) {
+      return "status";
+    }
+    if (key.endsWith("-texttags")) {
+      return "textTags";
+    }
+    if (key.endsWith("-publicationtags")) {
+      return "publicationTags";
+    }
+    return null;
+  },
+
+  installStyleTagRenderHook(win) {
+    let prototype = null;
+    try {
+      prototype = win?.require?.("zotero/itemTree")?.prototype;
+    } catch (error) {
+      this.log("Style item-tree module unavailable: " + error);
+    }
+    const original = prototype?._renderCell;
+    if (!prototype || typeof original !== "function") {
+      return false;
+    }
+
+    const current = this.styleRenderHooks.get(prototype);
+    if (current?.wrapper === original) {
+      return true;
+    }
+
+    const plugin = this;
+    const wrapper = function (...args) {
+      const cell = original.apply(this, args);
+      if (!plugin.styleTagIntegrationActive) {
+        return cell;
+      }
+      const column = args[2];
+      const kind = plugin.styleTagKindForDataKey(column?.dataKey || column?.key);
+      if (kind) {
+        plugin.decorateStyleTagCell(kind, cell, args[1]);
+      }
+      return cell;
+    };
+    wrapper.__zoteroGlassStyleTagHook = true;
+    prototype._renderCell = wrapper;
+    this.styleRenderHooks.set(prototype, { original, wrapper });
+    const tree = win?.ZoteroPane?.itemsView?.tree;
+    if (typeof tree?.invalidate === "function") {
+      tree.invalidate();
+    }
+    return true;
+  },
+
+  removeStyleTagRenderHook(win) {
+    let prototype = null;
+    try {
+      prototype = win?.require?.("zotero/itemTree")?.prototype;
+    } catch (error) {
+      return false;
+    }
+    const hook = prototype && this.styleRenderHooks.get(prototype);
+    if (!hook) {
+      return false;
+    }
+    if (prototype._renderCell === hook.wrapper) {
+      prototype._renderCell = hook.original;
+    }
+    this.styleRenderHooks.delete(prototype);
+    return true;
+  },
+
+  refreshStyleTagIntegration(trigger = "manual") {
+    if (!this.styleTagIntegrationActive) {
+      return { windows: 0, hooks: 0, cells: 0 };
+    }
+    const result = { windows: 0, hooks: 0, cells: 0 };
     const enumerator = Services.wm.getEnumerator(null);
     while (enumerator.hasMoreElements()) {
       const win = enumerator.getNext();
-      if (!win?.document?.getElementById("zotero-pane")) {
+      const doc = win?.document;
+      if (!doc?.getElementById("zotero-pane")) {
         continue;
       }
-      this.stabilizeStatusColumnChips(win.document);
+      result.windows += 1;
+      if (this.installStyleTagRenderHook(win)) {
+        result.hooks += 1;
+      }
+      result.cells += this.refreshVisibleStyleTags(doc);
     }
+    this.log(
+      "Style tag integration after " + trigger +
+      ": windows=" + result.windows +
+      " hooks=" + result.hooks +
+      " cells=" + result.cells
+    );
+    return result;
+  },
+
+  refreshVisibleStyleTags(doc) {
+    if (!doc?.getElementById("zotero-items-tree")) {
+      return 0;
+    }
+    let touched = 0;
+    for (const [kind, selector] of [
+      ["status", "#zotero-items-tree .cell.zoterostyle-status"],
+      ["textTags", "#zotero-items-tree .cell.zoterostyle-textTags"],
+      ["publicationTags", "#zotero-items-tree .cell.zoterostyle-publicationTags"],
+    ]) {
+      for (const cell of Array.from(doc.querySelectorAll(selector))) {
+        touched += this.decorateStyleTagCell(kind, cell);
+      }
+    }
+    return touched;
+  },
+
+  decorateStyleTagCell(kind, cell, data = "") {
+    if (!cell) {
+      return 0;
+    }
+    if (kind === "status") {
+      return this.solidifyStyleStatusCell(cell, data) ? 1 : 0;
+    } else if (kind === "textTags") {
+      return this.solidifyStyleTextTagCell(cell, true);
+    } else if (kind === "publicationTags") {
+      return this.solidifyStyleTextTagCell(cell, false);
+    }
+    return 0;
   },
 
   applyReaderDocumentPreferences(config = this.readConfig()) {
@@ -1163,14 +1436,6 @@ body.sidebar-open #sidebarContainer {
       } else {
         doc.documentElement.removeAttribute("zotero-glass-reader-active");
       }
-    }
-  },
-
-  isReaderDocument(doc) {
-    try {
-      return String(doc?.location?.href || "").startsWith("resource://zotero/reader/reader.html");
-    } catch (error) {
-      return false;
     }
   },
 
@@ -1261,57 +1526,98 @@ body.sidebar-open #sidebarContainer {
     ].filter(region => region.width > 0 && region.height > 0);
   },
 
-  stabilizeStatusColumnChips(doc) {
-    if (!doc?.documentElement || !doc.getElementById("zotero-items-tree")) {
-      return 0;
+  solidifyStyleStatusCell(cell, data = "") {
+    const inner = cell.querySelector?.(".inner");
+    const chip = inner?.parentElement || cell.firstElementChild;
+    if (!chip || chip === cell) {
+      return false;
     }
 
-    let touched = 0;
-    const cells = Array.from(doc.querySelectorAll("#zotero-items-tree .cell.zoterostyle-status"));
-    for (const cell of cells) {
-      const nodes = Array.from(cell.querySelectorAll("span, div, button, label, description"));
-      const label = nodes.find(node => /^\/?(done|reading|unread)$/i.test(String(node.textContent || "").trim()));
-      if (!label) {
-        continue;
-      }
-
-      const key = "/" + String(label.textContent || "").trim().replace(/^\/+/, "").toLowerCase();
-      const colors = this.statusTagColors[key];
-      const chip = this.findCompactStatusAncestor(label, cell);
-      if (!colors || !chip) {
-        continue;
-      }
-
-      chip.classList.add("zotero-glass-status-chip");
-      chip.setAttribute("data-zotero-glass-status", colors.name);
-      chip.style.setProperty("--zotero-glass-status-bg", colors.background);
-      chip.style.setProperty("--zotero-glass-status-fg", colors.foreground);
-      chip.style.setProperty("--zotero-glass-status-border", colors.border);
-      chip.style.setProperty("--zotero-glass-status-dot", colors.dot);
-      touched += 1;
+    const sourceColor = this.styleStatusColorFromData(data) ||
+      this.styleBackgroundFromNode(chip);
+    const palette = this.styleTagPalette(sourceColor);
+    if (!palette) {
+      return false;
     }
-    return touched;
+
+    chip.style?.setProperty("background-color", palette.background, "important");
+    chip.style?.setProperty("color", palette.foreground, "important");
+
+    for (const label of Array.from(chip.querySelectorAll?.("span") || [])) {
+      label.style.setProperty("color", palette.foreground, "important");
+    }
+    for (const dot of Array.from(chip.querySelectorAll?.(".circle > div") || [])) {
+      dot.style.setProperty("background-color", "#FFFFFF", "important");
+    }
+    return true;
   },
 
-  findCompactStatusAncestor(label, cell) {
-    let current = label;
-    let best = label;
-    while (current && current !== cell) {
-      const text = String(current.textContent || "").trim();
-      if (!/^\/?(done|reading|unread)$/i.test(text)) {
-        break;
+  solidifyStyleTextTagCell(cell, forceReadableText = false) {
+    let solidified = 0;
+    for (const chip of Array.from(cell.querySelectorAll?.("span") || [])) {
+      if (!String(chip.textContent || "").trim() || !chip.style?.backgroundColor) {
+        continue;
       }
-      try {
-        const rect = current.getBoundingClientRect?.();
-        if (!rect || rect.width === 0 || rect.height === 0 || (rect.width <= 170 && rect.height <= 36)) {
-          best = current;
-        }
-      } catch (error) {
-        best = current;
+      const palette = this.styleTagPalette(chip.style.backgroundColor);
+      if (!palette) {
+        continue;
       }
-      current = current.parentElement;
+      chip.style.setProperty("background-color", palette.background, "important");
+      if (forceReadableText) {
+        chip.style.setProperty("color", palette.foreground, "important");
+        chip.style.setProperty("opacity", "1", "important");
+      }
+      solidified += 1;
     }
-    return best;
+    return solidified;
+  },
+
+  styleBackgroundFromNode(node) {
+    const inline = node?.style?.backgroundColor || node?.style?.background || "";
+    return this.styleTagPalette(inline) ? inline : "";
+  },
+
+  styleStatusColorFromData(data) {
+    try {
+      const payload = String(data || "").split("\n").slice(1).join("\n");
+      const parsed = JSON.parse(payload);
+      return typeof parsed?.color === "string" ? parsed.color : "";
+    } catch (error) {
+      return "";
+    }
+  },
+
+  styleTagPalette(background) {
+    const value = String(background || "").trim();
+    const hex = value.match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+    const match = value.match(
+      /^rgba?\(\s*([\d.]+)(?:\s*,\s*|\s+)([\d.]+)(?:\s*,\s*|\s+)([\d.]+)/i
+    );
+    if (!hex && !match) {
+      return null;
+    }
+
+    const rgb = hex
+      ? (hex[1].length === 3
+          ? hex[1].split("").map(channel => parseInt(channel + channel, 16))
+          : hex[1].match(/.{2}/g).map(channel => parseInt(channel, 16)))
+      : match.slice(1, 4).map(channel =>
+          this.clamp(Math.round(Number(channel)), 0, 255)
+        );
+    const linear = rgb.map(value => {
+      const channel = value / 255;
+      return channel <= 0.04045
+        ? channel / 12.92
+        : Math.pow((channel + 0.055) / 1.055, 2.4);
+    });
+    const luminance = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+    const darkText = luminance >= 0.42;
+    return {
+      background: `rgba(${rgb.join(", ")}, ${this.styleTagBackgroundOpacity})`,
+      foreground: darkText ? "#111418" : "#FFFFFF",
+      border: darkText ? "rgba(0, 0, 0, 0.34)" : "rgba(255, 255, 255, 0.34)",
+      rgb,
+    };
   },
 
   forEachOpenDocument(callback) {
@@ -1350,314 +1656,19 @@ body.sidebar-open #sidebarContainer {
     }
   },
 
-  restyleStatusColumnTags(doc) {
-    if (!doc?.documentElement || !doc.getElementById("zotero-items-tree")) {
-      return 0;
-    }
-
-    let touched = 0;
-    const cells = Array.from(doc.querySelectorAll("#zotero-items-tree .cell.zoterostyle-status"));
-    for (const cell of cells) {
-      for (const painted of Array.from(cell.querySelectorAll(".zotero-glass-status-chip"))) {
-        this.clearStatusChipPaint(painted);
-      }
-
-      const descendants = Array.from(cell.querySelectorAll("span, div, button, label, description"));
-      const candidates = descendants.filter(node => {
-        const text = String(node.textContent || "").trim();
-        return /^\/?(done|reading|unread)$/i.test(text) && this.isReasonableStatusChipNode(node);
-      });
-      if (!candidates.length) {
-        continue;
-      }
-
-      candidates.sort((a, b) => {
-        const aRect = a.getBoundingClientRect?.();
-        const bRect = b.getBoundingClientRect?.();
-        const aArea = (aRect?.width || 999) * (aRect?.height || 999);
-        const bArea = (bRect?.width || 999) * (bRect?.height || 999);
-        return aArea - bArea;
-      });
-
-      const host = candidates[0];
-      const key = "/" + String(host.textContent || "").trim().replace(/^\/+/, "").toLowerCase();
-      const colors = this.statusTagColors[key];
-      if (!colors) {
-        continue;
-      }
-
-      const chip = this.findOriginalStatusChip(host, cell);
-      if (!chip) {
-        continue;
-      }
-
-      cell.classList.add("zotero-glass-status-cell");
-      this.paintStatusChipContainer(chip, host, colors, cell);
-      touched += 1;
-    }
-    return touched;
-  },
-
-  restyleStatusTags(doc) {
-    if (!doc?.documentElement || !this.isZoteroOrReaderDocument(doc)) {
-      return 0;
-    }
-
-    let candidates = [];
+  isReaderDocument(doc) {
     try {
-      candidates = Array.from(doc.querySelectorAll(
-        "span, div, button, label, description, hbox, box, td, cell"
-      ));
-    } catch (error) {
-      return 0;
-    }
-
-    let touched = 0;
-    for (const node of candidates) {
-      const raw = String(node.textContent || "").trim();
-      if (!raw || raw.length > 18 || /\s/.test(raw)) {
-        continue;
-      }
-      const key = "/" + raw.replace(/^\/+/, "").toLowerCase();
-      const colors = this.statusTagColors[key];
-      if (!colors) {
-        continue;
-      }
-
-      const host = this.statusChipHost(node);
-      if (!host || !this.isReasonableStatusChipNode(host)) {
-        continue;
-      }
-
-      this.paintStatusChip(host, colors);
-      touched += 1;
-    }
-    return touched;
-  },
-
-  statusChipHost(node) {
-    const className = String(node.className || "");
-    if (/row|tree|table|virtualized|items|pane|container|viewport/i.test(className)) {
-      return null;
-    }
-    return node;
-  },
-
-  isReasonableStatusChipNode(node) {
-    const text = String(node.textContent || "").trim();
-    if (!/^\/?(done|reading|unread)$/i.test(text)) {
-      return false;
-    }
-    if ((node.children?.length || 0) > 3) {
-      return false;
-    }
-
-    try {
-      const rect = node.getBoundingClientRect?.();
-      if (!rect || rect.width === 0 || rect.height === 0) {
-        return true;
-      }
-      return rect.width <= 150 && rect.height <= 34;
-    } catch (error) {
-      return true;
-    }
-  },
-
-  findOriginalStatusChip(textNode, cell) {
-    let best = textNode;
-    let current = textNode;
-    while (current && current !== cell) {
-      const text = String(current.textContent || "").trim();
-      if (!/^\/?(done|reading|unread)$/i.test(text)) {
-        break;
-      }
-      try {
-        const rect = current.getBoundingClientRect?.();
-        if (!rect || rect.width === 0 || rect.height === 0 || (rect.width <= 170 && rect.height <= 36)) {
-          best = current;
-        }
-      } catch (error) {
-        best = current;
-      }
-      current = current.parentElement;
-    }
-    return best;
-  },
-
-  clearStatusChipPaint(node) {
-    node.classList?.remove("zotero-glass-status-chip");
-    node.removeAttribute?.("data-zotero-glass-status");
-    for (const property of [
-      "opacity",
-      "background-color",
-      "background-image",
-      "color",
-      "border-color",
-      "box-shadow",
-      "backdrop-filter",
-      "-webkit-backdrop-filter",
-    ]) {
-      node.style?.removeProperty(property);
-    }
-  },
-
-  paintStatusChipContainer(chip, textNode, colors, cell = null) {
-    chip.classList?.add("zotero-glass-status-chip");
-    chip.setAttribute?.("data-zotero-glass-status", colors.name);
-    chip.style.setProperty("opacity", "1", "important");
-    chip.style.setProperty("background-color", colors.background, "important");
-    chip.style.setProperty("background-image", "none", "important");
-    chip.style.setProperty("color", colors.foreground, "important");
-
-    if (textNode !== chip) {
-      this.clearStatusChipPaint(textNode);
-      textNode.style.setProperty("color", colors.foreground, "important");
-      textNode.style.setProperty("background-color", "transparent", "important");
-      textNode.style.setProperty("background-image", "none", "important");
-      textNode.style.setProperty("box-shadow", "none", "important");
-      textNode.style.setProperty("border-color", "transparent", "important");
-    }
-
-    for (const child of Array.from(chip.children || [])) {
-      const childText = String(child.textContent || "").trim();
-      if (childText && childText.length <= 18) {
-        child.style.setProperty("color", colors.foreground, "important");
-        child.style.setProperty("background-color", "transparent", "important");
-        child.style.setProperty("background-image", "none", "important");
-      }
-      if (!childText || /swatch|dot|icon|colored/i.test(String(child.className || ""))) {
-        this.paintStatusDot(child, colors);
-      }
-    }
-
-    for (const dot of this.findStatusDotCandidates(chip, textNode, cell)) {
-      this.paintStatusDot(dot, colors);
-    }
-  },
-
-  findStatusDotCandidates(chip, textNode, cell) {
-    const candidates = new Set();
-    const addIfDot = node => {
-      if (!node || node === chip || node === textNode) {
-        return;
-      }
-      const className = String(node.className || "");
-      const text = String(node.textContent || "").trim();
-      if (/tag-swatch|swatch|dot|icon/i.test(className) || !text) {
-        candidates.add(node);
-      }
-    };
-
-    for (const node of [
-      textNode?.previousElementSibling,
-      textNode?.nextElementSibling,
-      chip?.previousElementSibling,
-      chip?.nextElementSibling,
-      textNode?.parentElement?.previousElementSibling,
-      textNode?.parentElement?.nextElementSibling,
-    ]) {
-      addIfDot(node);
-    }
-
-    for (const root of [chip, textNode?.parentElement, cell]) {
-      try {
-        for (const node of Array.from(root?.querySelectorAll?.(".tag-swatch, [class*='swatch'], [class*='dot'], [class*='icon'], [class*='circle'], [class*='circle'] *, .circle, .circle *") || [])) {
-          addIfDot(node);
-        }
-      } catch (error) {
-        // Ignore transient virtualized-row teardown.
-      }
-    }
-
-    return Array.from(candidates).filter(node => {
-      try {
-        const rect = node.getBoundingClientRect?.();
-        return !rect || rect.width === 0 || rect.height === 0 || (rect.width <= 22 && rect.height <= 22);
-      } catch (error) {
-        return true;
-      }
-    });
-  },
-
-  paintStatusDot(node, colors) {
-    node.setAttribute?.("data-zotero-glass-status-dot", "true");
-    node.style.setProperty("opacity", "1", "important");
-    for (const property of [
-      "display",
-      "width",
-      "height",
-      "min-width",
-      "min-height",
-      "border-radius",
-      "box-shadow",
-      "background-color",
-      "background-image",
-    ]) {
-      node.style.removeProperty(property);
-    }
-    node.style.setProperty("fill", colors.dot, "important");
-    node.style.setProperty("color", colors.dot, "important");
-    node.style.setProperty("stroke", colors.dot, "important");
-    node.style.setProperty("-moz-context-properties", "fill, fill-opacity, stroke, stroke-opacity", "important");
-    if (this.isSolidStatusDotNode(node)) {
-      node.style.setProperty("background-color", colors.dot, "important");
-    } else {
-      node.style.setProperty("background-color", "transparent", "important");
-    }
-    node.style.setProperty("border-color", colors.dot, "important");
-  },
-
-  isSolidStatusDotNode(node) {
-    const text = String(node.textContent || "").trim();
-    if (text || (node.children?.length || 0) > 0) {
-      return false;
-    }
-    try {
-      const rect = node.getBoundingClientRect?.();
-      if (rect && rect.width > 0 && rect.height > 0 && (rect.width > 14 || rect.height > 14)) {
-        return false;
-      }
-      const style = node.ownerGlobal?.getComputedStyle?.(node);
-      const background = style?.backgroundColor || "";
-      return /border-radius/i.test(node.getAttribute?.("style") || "") || (
-        background && !/rgba\\(0, 0, 0, 0\\)|transparent/i.test(background)
+      return Boolean(
+        String(doc?.location?.href || "").startsWith("resource://zotero/reader/reader.html") ||
+        doc.getElementById("reader") ||
+        doc.getElementById("reader-ui") ||
+        doc.getElementById("viewerContainer") ||
+        doc.querySelector(".pdfViewer") ||
+        doc.querySelector(".primary-view, .secondary-view, .reader-sidebar")
       );
     } catch (error) {
       return false;
     }
-  },
-
-  paintStatusChip(node, colors) {
-    node.classList?.add("zotero-glass-status-chip");
-    node.setAttribute?.("data-zotero-glass-status", colors.name);
-    node.style.setProperty("opacity", "1", "important");
-    node.style.setProperty("background-color", colors.background, "important");
-    node.style.setProperty("background-image", "none", "important");
-    node.style.setProperty("color", colors.foreground, "important");
-    node.style.setProperty("border-color", colors.border, "important");
-    node.style.setProperty("box-shadow", "inset 0 1px rgba(255, 255, 255, 0.22)", "important");
-    node.style.setProperty("backdrop-filter", "none", "important");
-    node.style.setProperty("-webkit-backdrop-filter", "none", "important");
-
-    for (const child of Array.from(node.children || [])) {
-      const childText = String(child.textContent || "").trim();
-      if (childText && childText.length <= 18) {
-        child.style.setProperty("color", colors.foreground, "important");
-      }
-      if (!childText || /swatch|dot|icon|colored/i.test(String(child.className || ""))) {
-        this.paintStatusDot(child, colors);
-      }
-    }
-  },
-
-  isReaderDocument(doc) {
-    return Boolean(
-      doc.getElementById("reader") ||
-      doc.getElementById("reader-ui") ||
-      doc.getElementById("viewerContainer") ||
-      doc.querySelector(".pdfViewer") ||
-      doc.querySelector(".primary-view, .secondary-view, .reader-sidebar")
-    );
   },
 
   isZoteroOrReaderDocument(doc) {
@@ -1711,43 +1722,6 @@ body.sidebar-open #sidebarContainer {
     }
   },
 
-  readJSONFile(path, fallback = {}) {
-    const file = this.fileForPath(path);
-    if (!file.exists()) {
-      return fallback;
-    }
-    try {
-      const stream = Cc["@mozilla.org/network/file-input-stream;1"]
-        .createInstance(Ci.nsIFileInputStream);
-      const converter = Cc["@mozilla.org/intl/converter-input-stream;1"]
-        .createInstance(Ci.nsIConverterInputStream);
-      stream.init(file, 0x01, 0, 0);
-      converter.init(stream, "UTF-8", 0, 0);
-
-      let data = "";
-      const chunk = {};
-      while (converter.readString(0xffffffff, chunk) !== 0) {
-        data += chunk.value;
-      }
-      converter.close();
-      return JSON.parse(data);
-    } catch (error) {
-      this.log("json read failed " + path + ": " + error);
-      return fallback;
-    }
-  },
-
-  writeJSONFile(path, value) {
-    const file = this.fileForPath(path);
-    this.ensureDirectory(file.parent);
-    const data = JSON.stringify(value);
-    const stream = Cc["@mozilla.org/network/file-output-stream;1"]
-      .createInstance(Ci.nsIFileOutputStream);
-    stream.init(file, 0x02 | 0x08 | 0x20, 0o644, 0);
-    stream.write(data, data.length);
-    stream.close();
-  },
-
   writeConfig(config) {
     const next = this.sanitizeConfig(config);
     const file = this.fileForPath(this.configPath);
@@ -1769,6 +1743,11 @@ body.sidebar-open #sidebarContainer {
     const appearance = this.sanitizeAppearanceConfig(migrated, this.defaults);
     return {
       sidebarIndependent: migrated.sidebarIndependent === true,
+      styleTagBackgroundOpacity: this.clamp(
+        migrated.styleTagBackgroundOpacity,
+        0.2,
+        1
+      ),
       ...appearance,
       sidebar: this.sanitizeAppearanceConfig(migrated.sidebar, this.defaults.sidebar),
     };
@@ -1804,9 +1783,13 @@ body.sidebar-open #sidebarContainer {
 
   applyConfig(config) {
     const normalized = this.sanitizeConfig(config);
+    this.styleTagBackgroundOpacity = normalized.styleTagBackgroundOpacity;
     const status = NativeGlassBridge.apply(this, this.appearanceConfig(normalized));
     this.registerConfigStylesheet(normalized);
     this.applyReaderDocumentPreferences(normalized);
+    if (this.styleTagIntegrationActive) {
+      this.refreshStyleTagIntegration("config-change");
+    }
     this.log("native status ok=" + status.ok + " message=" + status.message);
     return status;
   },
@@ -1876,18 +1859,6 @@ body.sidebar-open #sidebarContainer {
     doc.documentElement.removeAttribute("zotero-glass-active");
     doc.documentElement.removeAttribute("zotero-glass-reader-active");
     doc.getElementById("zotero-glass-reader-sidebar-style")?.remove();
-    for (const node of Array.from(doc.querySelectorAll?.(".zotero-glass-status-chip") || [])) {
-      node.classList.remove("zotero-glass-status-chip");
-      node.removeAttribute("data-zotero-glass-status");
-      for (const property of [
-        "--zotero-glass-status-bg",
-        "--zotero-glass-status-fg",
-        "--zotero-glass-status-border",
-        "--zotero-glass-status-dot",
-      ]) {
-        node.style.removeProperty(property);
-      }
-    }
   },
 
   nativeStatus() {
@@ -1973,5 +1944,244 @@ body.sidebar-open #sidebarContainer {
     } catch (error) {
       Zotero.debug("Zotero Glass plugin log failed: " + error);
     }
+  },
+};
+
+ZoteroGlass.preferences = {
+  root: null,
+  api: null,
+  config: null,
+  writeTimer: null,
+  statusTimer: null,
+
+  inputIDs: [
+    "backgroundTransparency",
+    "blurStrength",
+    "backgroundColor",
+    "styleTagBackgroundOpacity",
+  ],
+
+  sidebarInputMap: {
+    sidebarBackgroundTransparency: "backgroundTransparency",
+    sidebarBlurStrength: "blurStrength",
+    sidebarBackgroundColor: "backgroundColor",
+  },
+
+  materialNames: {
+    auto: "自动",
+    hud: "HUD",
+    underWindow: "窗口",
+    sidebar: "侧边栏",
+    menu: "菜单",
+    window: "普通",
+  },
+
+  init(root) {
+    try {
+      return this._init(root);
+    } catch (error) {
+      ZoteroGlass.log(
+        "preferences pane init failed: " + error +
+        (error?.stack ? " stack=" + error.stack : "")
+      );
+      throw error;
+    }
+  },
+
+  _init(root) {
+    if (!root || root.getAttribute("data-initialized") === "true") {
+      return;
+    }
+    root.setAttribute("data-initialized", "true");
+    this.root = root;
+    this.api = ZoteroGlass.preferenceAPI();
+    root.addEventListener("showing", () => this.show(root));
+    root.ownerDocument.documentElement.setAttribute(
+      "zotero-glass-preferences-active",
+      "true"
+    );
+
+    this.render(this.api.readConfig());
+    for (const id of [...this.inputIDs, ...this.sidebarInputIDs()]) {
+      const input = this.element(id);
+      input.addEventListener("input", () => this.scheduleSave());
+      input.addEventListener("change", () => this.scheduleSave());
+    }
+    this.element("sidebarIndependent").addEventListener("change", () => {
+      this.scheduleSave();
+    });
+    for (const option of root.querySelectorAll(".material-option")) {
+      option.addEventListener("click", () => {
+        this.setMaterial(option.dataset.material);
+        this.scheduleSave();
+      });
+    }
+    this.element("reset").addEventListener("click", () => {
+      this.render(this.api.resetConfig());
+      this.setStatus("saved", "已恢复默认");
+    });
+
+    this.api.applyCurrent();
+    ZoteroGlass.log("preferences pane initialized");
+  },
+
+  show(root) {
+    if (!root) {
+      return;
+    }
+    root.ownerDocument.documentElement.setAttribute(
+      "zotero-glass-preferences-active",
+      "true"
+    );
+    if (this.api) {
+      this.render(this.api.readConfig());
+      this.api.applyCurrent();
+    }
+  },
+
+  sidebarInputIDs() {
+    return Object.keys(this.sidebarInputMap);
+  },
+
+  element(id) {
+    return this.root.querySelector(`#${id}`);
+  },
+
+  mergeDefaults(next) {
+    const incoming = next || {};
+    const merged = JSON.parse(JSON.stringify(this.api.defaults));
+    Object.assign(merged, incoming);
+    merged.sidebar = {
+      ...this.api.defaults.sidebar,
+      ...(incoming.sidebar || {}),
+    };
+    merged.sidebarIndependent = incoming.sidebarIndependent === true;
+    return merged;
+  },
+
+  format(id, value) {
+    if (id === "backgroundTransparency" || id === "styleTagBackgroundOpacity") {
+      return `${Math.round(Number(value) * 100)}%`;
+    }
+    if (id === "blurStrength") {
+      return `${Math.round(Number(value))}%`;
+    }
+    if (id === "backgroundColor") {
+      return String(value).toUpperCase();
+    }
+    if (id === "glassMaterial") {
+      return this.materialNames[value] || value;
+    }
+    return String(value);
+  },
+
+  setMaterial(value) {
+    const material = this.materialNames[value] ? value : "auto";
+    for (const option of this.root.querySelectorAll(".material-option")) {
+      const selected = option.dataset.material === material;
+      option.classList.toggle("is-selected", selected);
+      option.setAttribute("aria-checked", selected ? "true" : "false");
+    }
+    this.element("glassMaterial-value").textContent = this.format(
+      "glassMaterial",
+      material
+    );
+  },
+
+  getMaterial() {
+    return (
+      this.root.querySelector(".material-option.is-selected")?.dataset.material ||
+      "auto"
+    );
+  },
+
+  readControls() {
+    for (const id of this.inputIDs) {
+      const input = this.element(id);
+      this.config[id] = input.type === "range" ? Number(input.value) : input.value;
+    }
+    this.config.glassMaterial = this.getMaterial();
+    this.config.sidebarIndependent = this.element("sidebarIndependent").checked;
+    for (const id of this.sidebarInputIDs()) {
+      const input = this.element(id);
+      const key = this.sidebarInputMap[id];
+      this.config.sidebar[key] =
+        input.type === "range" ? Number(input.value) : input.value;
+    }
+    return this.config;
+  },
+
+  render(next) {
+    this.config = this.mergeDefaults(next);
+    for (const id of this.inputIDs) {
+      this.element(id).value = this.config[id];
+      this.element(`${id}-value`).textContent = this.format(id, this.config[id]);
+    }
+    this.setMaterial(this.config.glassMaterial);
+    this.element("sidebarIndependent").checked =
+      this.config.sidebarIndependent === true;
+    for (const id of this.sidebarInputIDs()) {
+      const key = this.sidebarInputMap[id];
+      this.element(id).value = this.config.sidebar[key];
+      this.element(`${id}-value`).textContent = this.format(
+        key,
+        this.config.sidebar[key]
+      );
+    }
+    this.updateSidebarEnabled();
+  },
+
+  renderValues() {
+    this.readControls();
+    for (const id of this.inputIDs) {
+      this.element(`${id}-value`).textContent = this.format(id, this.config[id]);
+    }
+    this.element("glassMaterial-value").textContent = this.format(
+      "glassMaterial",
+      this.config.glassMaterial
+    );
+    for (const id of this.sidebarInputIDs()) {
+      const key = this.sidebarInputMap[id];
+      this.element(`${id}-value`).textContent = this.format(
+        key,
+        this.config.sidebar[key]
+      );
+    }
+    this.updateSidebarEnabled();
+  },
+
+  updateSidebarEnabled() {
+    const enabled = this.element("sidebarIndependent").checked;
+    this.element("sidebarControls").classList.toggle("is-disabled", !enabled);
+    this.element("sidebarIndependent-value").textContent = enabled ? "独立" : "跟随";
+    for (const id of this.sidebarInputIDs()) {
+      this.element(id).disabled = !enabled;
+    }
+  },
+
+  setStatus(kind, text) {
+    const node = this.element("apply-status");
+    node.className = `status ${kind || ""}`.trim();
+    node.textContent = text;
+    clearTimeout(this.statusTimer);
+  },
+
+  saveNow() {
+    try {
+      this.renderValues();
+      this.render(this.api.writeConfig(this.config));
+      this.setStatus("saved", "已保存");
+      this.statusTimer = setTimeout(() => this.setStatus("", "已就绪"), 1200);
+    } catch (error) {
+      this.setStatus("error", "保存失败");
+      Zotero.logError(error);
+    }
+  },
+
+  scheduleSave() {
+    this.renderValues();
+    this.setStatus("", "应用中");
+    clearTimeout(this.writeTimer);
+    this.writeTimer = setTimeout(() => this.saveNow(), 120);
   },
 };

@@ -26,7 +26,7 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
     Ci: Components.interfaces,
   };
   Services.scriptloader.loadSubScript(rootURI + "chrome/content/zoteroGlass.js", pluginScope);
-  await pluginScope.ZoteroGlass.startup();
+  await pluginScope.ZoteroGlass.startup(rootURI);
 }
 
 async function onMainWindowLoad({ window }, reason) {
@@ -38,12 +38,14 @@ async function onMainWindowUnload({ window }, reason) {
 }
 
 async function shutdown({ id, version, resourceURI, rootURI }, reason) {
-  if (reason !== APP_SHUTDOWN) {
-    pluginScope?.ZoteroGlass?.shutdown();
-    if (chromeHandle) {
-      chromeHandle.destruct();
-      chromeHandle = null;
-    }
+  if (reason === APP_SHUTDOWN) {
+    return;
+  }
+
+  pluginScope?.ZoteroGlass?.shutdown();
+  if (chromeHandle) {
+    chromeHandle.destruct();
+    chromeHandle = null;
   }
 }
 

@@ -36,12 +36,66 @@
   --material-background: rgba(7, 9, 10, 0.18) !important;
   --material-stripe: rgba(255, 255, 255, 0.034) !important;
   --material-sidepane: rgba(8, 10, 11, 0.24) !important;
+  --material-tabbar: rgba(7, 9, 10, 0.18) !important;
   --material-toolbar: rgba(8, 10, 11, 0.24) !important;
   --material-mix-quinary: rgba(255, 255, 255, 0.07) !important;
   --material-mix-quarternary: rgba(255, 255, 255, 0.1) !important;
   --color-panedivider: rgba(255, 255, 255, 0.07) !important;
   --material-panedivider: 1px solid rgba(255, 255, 255, 0.07) !important;
   --color-scrollbar-background: rgba(0, 0, 0, 0.12) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-title-bar {
+  -moz-appearance: none !important;
+  background: rgba(7, 9, 10, 0.18) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  backdrop-filter: blur(42px) saturate(1.45) !important;
+  -webkit-backdrop-filter: blur(42px) saturate(1.45) !important;
+}
+
+:root[zotero-glass-active="true"] #tab-bar-container {
+  --tab-border: 0.5px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+:root[zotero-glass-active="true"] #tab-bar-container .tab:not(:last-child) {
+  border-inline-end: 0 !important;
+}
+
+:root[zotero-glass-active="true"] #tab-bar-container .tab:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -2.5px;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+  z-index: 2;
+}
+
+:root[zotero-glass-active="true"] #tab-bar-container .tab.selected {
+  color: rgba(255, 255, 255, 0.98) !important;
+  background: rgba(255, 255, 255, 0.105) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 1px 4px rgba(0, 0, 0, 0.22) !important;
+}
+
+:root[zotero-glass-active="true"] #tab-bar-container .tab.selected .tab-name {
+  font-weight: 600 !important;
+}
+
+:root[zotero-glass-active="true"] #tab-bar-container .tab:not(.selected) {
+  color: rgba(255, 255, 255, 0.72) !important;
+  border-bottom: 0 !important;
+}
+
+:root[zotero-glass-active="true"] #tab-bar-container,
+:root[zotero-glass-active="true"] #zotero-tabs-toolbar {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
 }
 
 :root[zotero-glass-active="true"] #zotero-toolbar,
@@ -60,11 +114,11 @@
 
 :root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table-header {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.008)),
-    rgba(7, 9, 10, 0.18) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
-  backdrop-filter: blur(42px) saturate(1.45) !important;
-  -webkit-backdrop-filter: blur(42px) saturate(1.45) !important;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.004)),
+    rgba(7, 9, 10, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  backdrop-filter: blur(38px) saturate(1.38) !important;
+  -webkit-backdrop-filter: blur(38px) saturate(1.38) !important;
 }
 
 :root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table-header .cell,
@@ -73,6 +127,12 @@
   background-color: transparent !important;
   background-image: none !important;
   border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table-header > .cell:not(:last-child),
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row > .cell:not(:last-child) {
+  box-sizing: border-box !important;
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 :root[zotero-glass-active="true"] .virtualized-table .row,
@@ -266,55 +326,6 @@ body.enable-horizontal-split-view,
   -webkit-backdrop-filter: blur(40px) saturate(1.45) !important;
 }
 
-:root[zotero-glass-active="true"] .zotero-glass-status-chip,
-.zotero-glass-status-chip {
-  opacity: 1 !important;
-  isolation: isolate !important;
-  background-color: var(--zotero-glass-status-bg) !important;
-  background-image: none !important;
-  color: var(--zotero-glass-status-fg) !important;
-  border-color: var(--zotero-glass-status-border) !important;
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.18) !important;
-  filter: none !important;
-  mix-blend-mode: normal !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-:root[zotero-glass-active="true"] .zotero-glass-status-chip *,
-.zotero-glass-status-chip * {
-  opacity: 1 !important;
-  filter: none !important;
-  mix-blend-mode: normal !important;
-}
-
-:root[zotero-glass-active="true"] .zotero-glass-status-chip span,
-.zotero-glass-status-chip span {
-  color: var(--zotero-glass-status-fg) !important;
-}
-
-:root[zotero-glass-active="true"] .zotero-glass-status-chip .circle > div,
-.zotero-glass-status-chip .circle > div,
-:root[zotero-glass-active="true"] .zotero-glass-status-chip [style*="0.6rem"],
-.zotero-glass-status-chip [style*="0.6rem"] {
-  background-color: var(--zotero-glass-status-dot) !important;
-}
-
-.zotero-glass-status-chip[data-zotero-glass-status="done"] {
-  background-color: #5D9478 !important;
-  color: #F3FFF8 !important;
-}
-
-.zotero-glass-status-chip[data-zotero-glass-status="reading"] {
-  background-color: #B9974D !important;
-  color: #FFF8E8 !important;
-}
-
-.zotero-glass-status-chip[data-zotero-glass-status="unread"] {
-  background-color: #6FAFDB !important;
-  color: #FFFFFF !important;
-}
-
 #sidebarContainer {
   background: transparent !important;
   background-image: none !important;
@@ -390,6 +401,18 @@ body.enable-horizontal-split-view,
   background-image: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+/* Keep reader and web-reader toolbars on the same glass tier as the tab bar. */
+#reader-ui > .toolbar,
+#reader > .toolbar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.008)),
+    rgba(7, 9, 10, 0.18) !important;
+  background-color: rgba(7, 9, 10, 0.18) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(42px) saturate(1.45) !important;
+  -webkit-backdrop-filter: blur(42px) saturate(1.45) !important;
 }
 
 /* Reader controls need a readable surface above the continuous window glass. */

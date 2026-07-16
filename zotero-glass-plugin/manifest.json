@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Zotero Glass",
-  "version": "0.2.36",
+  "version": "0.2.45",
   "description": "Native macOS NSVisualEffectView glass for Zotero. macOS only.",
   "author": "Avi7ii",
   "homepage_url": "https://github.com/Avi7ii/Zotero-glass",

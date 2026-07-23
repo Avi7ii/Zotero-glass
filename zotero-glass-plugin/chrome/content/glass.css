@@ -160,6 +160,37 @@
   background-color: rgba(255, 255, 255, 0.06) !important;
 }
 
+/* ztoolkit reuses this command palette across multiple plugins (Shift+P).
+   Do not let the window-level material token make the floating surface disappear. */
+:root[zotero-glass-active="true"] #zotero-plugin-toolkit-prompt,
+:root[zotero-glass-active="true"] .prompt-container {
+  --material-background: rgba(16, 19, 21, 0.78) !important;
+  --color-background: rgba(24, 27, 29, 0.94) !important;
+  --material-mix-quinary: rgba(255, 255, 255, 0.10) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  background-color: rgba(16, 19, 21, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow:
+    0 18px 58px rgba(0, 0, 0, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+  backdrop-filter: blur(42px) saturate(1.30) !important;
+  -webkit-backdrop-filter: blur(42px) saturate(1.30) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-plugin-toolkit-prompt .prompt-input,
+:root[zotero-glass-active="true"] #zotero-plugin-toolkit-prompt .input-container input,
+:root[zotero-glass-active="true"] .prompt-container .prompt-input,
+:root[zotero-glass-active="true"] .prompt-container .input-container input {
+  color: rgba(255, 255, 255, 0.96) !important;
+  background-color: rgba(7, 9, 10, 0.42) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+:root[zotero-glass-active="true"] #zotero-plugin-toolkit-prompt .commands-container .selected,
+:root[zotero-glass-active="true"] .prompt-container .commands-container .selected {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+}
+
 :root[zotero-glass-active="true"] .virtualized-table .row.selected,
 :root[zotero-glass-active="true"] treechildren::-moz-tree-row(selected) {
   background-color: color-mix(in srgb, AccentColor 80%, transparent) !important;

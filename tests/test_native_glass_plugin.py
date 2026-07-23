@@ -271,6 +271,25 @@ class NativeGlassPluginTests(unittest.TestCase):
         self.assertIn("backdrop-filter: blur(56px)", css)
         self.assertIn("border: 1px solid rgba(255, 255, 255, 0.14)", css)
 
+    def test_ztoolkit_command_palette_has_a_readable_glass_surface(self):
+        css = (PLUGIN / "chrome/content/glass.css").read_text()
+
+        for selector in [
+            "#zotero-plugin-toolkit-prompt",
+            ".prompt-container",
+            ".prompt-container .input-container input",
+            ".prompt-container .commands-container .selected",
+        ]:
+            with self.subTest(selector=selector):
+                self.assertIn(selector, css)
+
+        prompt = css.split(
+            ':root[zotero-glass-active="true"] #zotero-plugin-toolkit-prompt,', 1
+        )[1].split('}', 1)[0]
+        self.assertIn("rgba(16, 19, 21, 0.78)", prompt)
+        self.assertIn("backdrop-filter: blur(42px)", prompt)
+        self.assertNotIn("background-color: transparent", prompt)
+
     def test_pdf_original_preview_feature_is_removed(self):
         source = (PLUGIN / "chrome/content/zoteroGlass.js").read_text()
         css = (PLUGIN / "chrome/content/glass.css").read_text()

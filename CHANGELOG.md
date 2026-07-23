@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.46 - 2026-07-22
+
+- Added a shared readable glass surface for ztoolkit command palettes opened with Shift+P, covering Ethereal Style, PDF Translate, and Zotero Addons without making the palette opaque.
+- Kept the palette input and selected command visually separated while preserving blur and translucency.
+- Audited installed plugin surfaces that inherit Zotero material tokens and left ordinary rows and toolbar controls unchanged.
+
 ## 0.2.45 - 2026-07-16
 
 - Removed Zotero's default bottom border from inactive tabs while preserving the vertical separators between tabs and the restrained active-tab surface.

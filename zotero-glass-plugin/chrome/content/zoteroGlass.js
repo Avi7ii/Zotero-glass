@@ -449,8 +449,11 @@ var NativeGlassBridge = {
       return;
     }
 
+    // NSWindow content-border APIs only support the bottom edge for a
+    // non-textured window. Other NSRectEdge values can raise NSException.
+    const edges = [1];
+
     if (!this.contentBorderStates.has(key)) {
-      const edges = [0, 1, 2, 3];
       this.contentBorderStates.set(key, {
         window,
         edges: edges.map(edge => ({
@@ -473,7 +476,7 @@ var NativeGlassBridge = {
       });
     }
 
-    for (const edge of [0, 1, 2, 3]) {
+    for (const edge of edges) {
       this.f.msg_void_bool_ulong(
         window,
         this.sel("setAutorecalculatesContentBorderThickness:forEdge:"),
@@ -570,7 +573,7 @@ var NativeGlassBridge = {
 };
 
 var ZoteroGlass = {
-  version: "0.2.46",
+  version: "0.2.47",
   pluginID: "zotero-glass@avi7ii.github.io",
   menuID: "zotero-glass-menuitem",
   separatorID: "zotero-glass-menuseparator",

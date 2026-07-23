@@ -60,6 +60,21 @@ class NativeGlassPluginTests(unittest.TestCase):
         )
         self.assertIn("contentBorderStates.clear()", source)
 
+    def test_content_border_suppression_only_uses_safe_bottom_edge(self):
+        source = (PLUGIN / "chrome/content/zoteroGlass.js").read_text()
+        suppress = source.split("suppressContentBorders(window) {", 1)[1].split(
+            "\n  restoreContentBorders(window) {", 1
+        )[0]
+        restore = source.split("restoreContentBorders(window) {", 1)[1].split(
+            "\n  isZoteroMainWindow(window) {", 1
+        )[0]
+
+        self.assertIn("const edges = [1];", suppress)
+        self.assertIn("edges: edges.map(edge => ({", suppress)
+        self.assertIn("for (const edge of edges)", suppress)
+        self.assertNotIn("[0, 1, 2, 3]", suppress)
+        self.assertIn("for (const edgeState of state.edges)", restore)
+
     def test_native_code_uses_nsvisualeffectview(self):
         native_source = ROOT / "native/ZoteroGlassNative.m"
 

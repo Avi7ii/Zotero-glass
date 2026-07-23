@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.47 - 2026-07-23
+
+- Prevented a native AppKit crash by limiting content-border suppression to the supported bottom edge of Zotero's non-textured main window.
+- Reused the same safe edge list for state capture, suppression, and restoration, with regression coverage for unsupported edges.
+
 ## 0.2.46 - 2026-07-22
 
 - Added a shared readable glass surface for ztoolkit command palettes opened with Shift+P, covering Ethereal Style, PDF Translate, and Zotero Addons without making the palette opaque.

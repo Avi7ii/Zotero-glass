@@ -19,7 +19,7 @@
 [![License](https://img.shields.io/github/license/Avi7ii/Zotero-glass?style=for-the-badge&color=f2c94c)](LICENSE)
 
 [![macOS](https://img.shields.io/badge/macOS-native_glass-111111?style=flat-square&logo=apple)](https://www.apple.com/macos/)
-[![Zotero](https://img.shields.io/badge/Zotero-9.x-CC2936?style=flat-square)](https://www.zotero.org/)
+[![Zotero](https://img.shields.io/badge/Zotero-9.x%20%7C%2010.0.x-CC2936?style=flat-square)](https://www.zotero.org/)
 [![Theme](https://img.shields.io/badge/Theme-Dark_only-222222?style=flat-square)](#重要说明)
 [![Stars](https://img.shields.io/github/stars/Avi7ii/Zotero-glass?style=flat-square&color=ffb000)](https://github.com/Avi7ii/Zotero-glass/stargazers)
 ![Views](https://komarev.com/ghpvc/?username=Avi7ii&repo=Zotero-glass&label=Views&color=7c5cff&style=flat-square)
@@ -126,7 +126,7 @@ flowchart LR
 | 项目 | 要求 |
 | :--- | :--- |
 | 操作系统 | macOS |
-| Zotero | 9.x |
+| Zotero | 9.x / 10.0.x |
 | 主题 | 仅暗色主题；插件启用后自动切换 |
 | 处理器 | Apple Silicon 或 Intel Mac |
 | 额外进程 | 无 |
@@ -137,6 +137,10 @@ Windows 和 Linux 暂不支持。核心玻璃依赖 macOS AppKit；其他平台�
 ---
 
 ## 安装
+
+Zotero Glass 已收录于 [Zotero 中文社区插件市场](https://zotero-chinese.com/plugins/)，搜索 **Zotero Glass** 即可找到。也可以在 Zotero 内的「插件市场」插件中搜索安装。市场索引定时同步；刚发布的版本可先从下方 Release 下载。
+
+0.2.50 起支持 Zotero 9.x 和 10.0.x，已在 macOS 的 Zotero 10.0.6 上验证。
 
 ### 方式一：下载 Release
 

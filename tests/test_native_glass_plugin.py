@@ -94,7 +94,7 @@ class NativeGlassPluginTests(unittest.TestCase):
             "https://raw.githubusercontent.com/Avi7ii/Zotero-glass/main/updates.json",
         )
         self.assertEqual(manifest["applications"]["zotero"]["strict_min_version"], "9.0")
-        self.assertEqual(manifest["applications"]["zotero"]["strict_max_version"], "9.*")
+        self.assertEqual(manifest["applications"]["zotero"]["strict_max_version"], "10.0.*")
 
     def test_update_manifest_matches_release_metadata(self):
         manifest = json.loads((PLUGIN / "manifest.json").read_text())

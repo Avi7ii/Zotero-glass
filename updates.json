@@ -3,13 +3,13 @@
     "zotero-glass@avi7ii.github.io": {
       "updates": [
         {
-          "version": "0.2.49",
-          "update_link": "https://github.com/Avi7ii/Zotero-glass/releases/download/v0.2.49/Zotero-Glass-0.2.49.xpi",
-          "update_hash": "sha256:fb5d2b1b42d20cf79ba8f458a0638abd3b90312670e20bb0293cde20a518932b",
+          "version": "0.2.50",
+          "update_link": "https://github.com/Avi7ii/Zotero-glass/releases/download/v0.2.50/Zotero-Glass-0.2.50.xpi",
+          "update_hash": "sha256:1da797bdb300766e210147beaf9c238f79e9fcfbefd3998279b3aa8a66cbe5c6",
           "applications": {
             "zotero": {
               "strict_min_version": "9.0",
-              "strict_max_version": "9.*"
+              "strict_max_version": "10.0.*"
             }
           }
         }

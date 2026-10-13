@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.50 - 2026-10-13
+
+- Added compatibility with Zotero 10.0.x while retaining Zotero 9.x support; verified installation, startup, native glass, and the settings pane on Zotero 10.0.6 for macOS.
+- Kept Zotero 10's library header and spacer rows out of ordinary item striping, with a readable glass surface for sticky library headers in multi-collection views.
+- Confirmed that Zotero 10 retains the item-tree render hook used for Ethereal Style tags; preserved the existing event-driven integration.
+- Added links to the existing Zotero Chinese community marketplace listing in both installation guides.
+
 ## 0.2.49 - 2026-08-10
 
 - Added a scoped dark semantic palette for Awesome GPT 3.1.8 so its prompt, response, Markdown, and code text remain readable on glass surfaces.

@@ -135,29 +135,37 @@
   border-inline-end: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
-:root[zotero-glass-active="true"] .virtualized-table .row,
+:root[zotero-glass-active="true"] .virtualized-table .row:not(.library-header-row):not(.spacer-row),
 :root[zotero-glass-active="true"] .virtualized-table-row,
 :root[zotero-glass-active="true"] treechildren::-moz-tree-row {
   background-color: rgba(255, 255, 255, 0.018) !important;
 }
 
-:root[zotero-glass-active="true"] .virtualized-table .row:nth-child(even),
+:root[zotero-glass-active="true"] .virtualized-table .row:nth-child(even):not(.library-header-row):not(.spacer-row),
 :root[zotero-glass-active="true"] .virtualized-table-row:nth-child(even) {
   background-color: rgba(255, 255, 255, 0.034) !important;
 }
 
-:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row.odd:not(.selected),
-:root[zotero-glass-active="true"] #zotero-items-tree .drag-image-container .row.odd:not(.selected) {
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row.odd:not(.selected):not(.library-header-row):not(.spacer-row),
+:root[zotero-glass-active="true"] #zotero-items-tree .drag-image-container .row.odd:not(.selected):not(.library-header-row):not(.spacer-row) {
   background-color: rgba(255, 255, 255, 0.028) !important;
 }
 
-:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row.even:not(.selected),
-:root[zotero-glass-active="true"] #zotero-items-tree .drag-image-container .row.even:not(.selected) {
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row.even:not(.selected):not(.library-header-row):not(.spacer-row),
+:root[zotero-glass-active="true"] #zotero-items-tree .drag-image-container .row.even:not(.selected):not(.library-header-row):not(.spacer-row) {
   background-color: rgba(255, 255, 255, 0.014) !important;
 }
 
-:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row:hover:not(.selected) {
+:root[zotero-glass-active="true"] #zotero-items-tree .virtualized-table .row:hover:not(.selected):not(.library-header-row):not(.spacer-row) {
   background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Zotero 10 adds library headers and spacers when collections are selected
+   together. Keep those structural rows out of item striping and preserve a
+   readable surface when a library header sticks above scrolling items. */
+:root[zotero-glass-active="true"] #zotero-items-tree .library-header-row {
+  background-color: rgba(16, 19, 21, 0.84) !important;
+  backdrop-filter: blur(24px) saturate(1.3);
 }
 
 /* ztoolkit reuses this command palette across multiple plugins (Shift+P).
